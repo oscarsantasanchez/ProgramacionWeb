@@ -1,37 +1,39 @@
 const express = require('express');
-const mongoose = require('mongoose'); //conexion con mongoose
+const mongoose = require('mongoose');
 const cors = require('cors');
 const app = express();
 
-//Ruta para la página principal
-app.get('/', (res,req) => {
-    res.send('Bienvenido a la página principal');
-});
+app.use(cors());
+app.use(express.json());
 
-//conexión con la base de datos
 mongoose.connect('mongodb://localhost:27017/productos')
-    .then (() => console.log('Conectado a mongodb' ));
-    .catch(error => console.error('Error al conectar con la bd'));
+  .then(() => console.log('Conectado a MongoDB'))
+  .catch(err => console.error('Error al conectar a MongoDB', err));
 
-    const Producto = mongoose.model ('Producto', new mongoose. Schema ({
-        nombre: String, 
-        precio: Number, 
-        descripcion: String
-    }));
+const Producto = mongoose.model('Producto', new mongoose.Schema({
+  nombre: String,
+  precio: Number,
+  descripcion: String
+}));
+  
+// Ruta para la página principal
+app.get('/', (req, res) => {
+  res.send('Bienvenido a la página principal');
+});
 
-//ruta para productos
+// Ruta para productos
 app.get('/productos', async (req, res) => {
-    const productos= await Producto.find();
-    res.send (productos);
+    const productos = await Producto.find();
+    res.send(productos);
+  });
+
+app.post('/productos', async (req, res) => {
+    const nuevoProducto = new Producto(req.body);
+    await nuevoProducto.save();
+    res.send(nuevoProducto);
 });
 
-//guardando un producto
-app.post ('/productos', async (req, res) =>{
-    const nuevoProducto = new Producto (req, body);
-    await nuevoProducto, save();
-    res, send (nuevoProducto);
+// Escuchar en el puerto 3000
+app.listen(3000, () => {
+  console.log('Servidor corriendo en http://localhost:3000');
 });
-
-app.listen(3000, () =>{
-    console.log('Servidor corriendo en http://localhost:3000/');
-})
