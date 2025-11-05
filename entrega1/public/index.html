@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal de Productos</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="navbar">
+    <h1>Portal de Productos</h1>
+    <nav>
+      <button id="loginBtn">Login</button>
+      <button id="registerBtn">Registro</button>
+      <button id="logoutBtn" class="hidden">Cerrar sesión</button>
+      <button id="chatBtn" class="hidden">Chat</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section id="authSection">
+      <h2>Bienvenido</h2>
+      <p>Inicia sesión o regístrate para continuar.</p>
+    </section>
+
+    <section id="productSection" class="hidden">
+      <h2>Productos</h2>
+      <div id="productList" class="product-grid"></div>
+
+      <div id="adminActions" class="hidden">
+        <h3>Crear nuevo producto</h3>
+        <form id="createProductForm">
+          <input type="text" id="productName" placeholder="Nombre del producto" required>
+          <textarea id="productDescription" placeholder="Descripción" required></textarea>
+          <input type="number" id="productPrice" placeholder="Precio" required>
+          <button type="submit">Crear producto</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <div id="modalContainer" class="modal hidden"></div>
+
+  <script src="client.js"></script>
+</body>
+</html>
