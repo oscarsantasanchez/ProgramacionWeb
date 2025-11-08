@@ -66,28 +66,64 @@ document.addEventListener('DOMContentLoaded', () => {
       const description = document.getElementById('productDescription').value;
       const price = document.getElementById('productPrice').value;
 
-      const res = await fetch('/api/products', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ title, description, price }),
-      });
+      // Validar campos
+      if (!title || !price) {
+        alert('❌ Título y precio son requeridos');
+        return;
+      }
 
-      if (res.ok) {
-        alert('✅ Producto creado correctamente');
-        form.reset();
-        loadProducts();
-      } else {
-        if (res.status === 401) {
-          alert('❌ Sesión expirada. Por favor, inicia sesión nuevamente.');
-          sessionStorage.clear();
-          window.location.reload();
+      if (isNaN(price) || parseFloat(price) <= 0) {
+        alert('❌ El precio debe ser un número válido mayor que 0');
+        return;
+      }
+
+      try {
+        console.log('🔄 Enviando solicitud para crear producto...');
+        
+        const res = await fetch('/api/products', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ 
+            title: title.trim(), 
+            description: description.trim(), 
+            price: parseFloat(price) 
+          }),
+        });
+
+        console.log('📨 Respuesta del servidor:', res.status);
+
+        if (res.ok) {
+          const data = await res.json();
+          console.log('✅ Producto creado:', data);
+          alert('✅ Producto creado correctamente');
+          form.reset();
+          loadProducts();
         } else {
-          const error = await res.json();
-          alert(`❌ Error al crear el producto: ${error.message || 'Intenta de nuevo'}`);
+          // Manejar diferentes códigos de error
+          if (res.status === 401) {
+            alert('❌ Sesión expirada. Por favor, inicia sesión nuevamente.');
+            sessionStorage.clear();
+            window.location.reload();
+          } else if (res.status === 403) {
+            alert('❌ No tienes permisos para crear productos. Se requiere rol de administrador.');
+          } else {
+            let errorMessage = 'Error al crear el producto';
+            try {
+              const errorData = await res.json();
+              errorMessage = errorData.message || errorMessage;
+            } catch (e) {
+              // Si no se puede parsear la respuesta JSON
+              errorMessage = `Error ${res.status}: ${res.statusText}`;
+            }
+            alert(`❌ ${errorMessage}`);
+          }
         }
+      } catch (error) {
+        console.error('❌ Error de red:', error);
+        alert('❌ Error de conexión. Verifica que el servidor esté funcionando y vuelve a intentarlo.');
       }
     });
   }
@@ -166,7 +202,6 @@ async function loadProducts() {
     productList.innerHTML = '<p>Error al cargar los productos</p>';
   }
 }
-
 
 async function deleteProduct(id) {
   if (!confirm('¿Seguro que quieres eliminar este producto?')) return;
