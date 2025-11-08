@@ -1,92 +1,59 @@
-// server.js
-const express = require('express');
-const http = require('http');
-const path = require('path');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const { Server } = require('socket.io');
+  const express = require('express');
+  const mongoose = require('mongoose');
+  const cors = require('cors');
+  const jwt = require('jsonwebtoken');
+  const { Server } = require('socket.io');
+  const http = require('http');
+  const { PORT, MONGO_URI, JWT_SECRET } = require('./config');
+  const Message = require('./models/Message');
 
-const config = require('./config');
-const authRoutes = require('./routes/authRoutes');
-const productRoutes = require('./routes/productRoutes');
-const chatRoutes = require('./routes/chatRoutes');
-const authenticateJWT = require('./middleware/authenticateJWT');
-const Message = require('./models/Message');
+  const authRoutes = require('./routes/authRoutes');
+  const productRoutes = require('./routes/productRoutes');
+  const chatRoutes = require('./routes/chatRoutes');
 
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
+  const app = express();
+  const server = http.createServer(app);
+  const io = new Server(server);
 
-// Middlewares
-app.use(cors());
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+  mongoose.connect(MONGO_URI)
+    .then(() => console.log('✅ MongoDB conectado'))
+    .catch(err => console.error('❌ Error en MongoDB:', err));
 
-// Rutas API
-app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
-// Protección de /api/chat mediante middleware enrutado (chatRoutes espera authenticateJWT)
-app.use('/api/chat', authenticateJWT, chatRoutes);
+  app.use(cors());
+  app.use(express.json());
+  app.use(express.static('public'));
 
-// Ruta pública por defecto sirve index.html
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// Socket.IO authentication on handshake using token (in auth payload or query)
-io.use((socket, next) => {
-  try {
-    const token = socket.handshake.auth && (socket.handshake.auth.token || socket.handshake.query.token);
-    if (!token) return next(new Error('Authentication error: token missing'));
-
-    const jwt = require('jsonwebtoken');
-    const config = require('./config');
-    const decoded = jwt.verify(token, config.JWT_SECRET);
-    socket.user = { id: decoded.id, username: decoded.username, role: decoded.role };
-    return next();
-  } catch (err) {
-    return next(new Error('Authentication error'));
-  }
-});
-
-io.on('connection', async (socket) => {
-  console.log('Socket connected:', socket.id, 'user:', socket.user && socket.user.username);
-
-  // Enviar historial (últimos 50)
-  try {
-    const history = await Message.find().sort({ createdAt: -1 }).limit(50).lean();
-    socket.emit('history', history.reverse());
-  } catch (err) {
-    console.error('Error cargando historial:', err);
-  }
-
-  socket.on('message', async (payload) => {
+  // Middleware de autenticación JWT
+  function authenticateJWT(req, res, next) {
+  const token = req.headers && req.headers.authorization
+    ? req.headers.authorization.split(' ')[1]
+    : undefined;
+    if (!token) return res.status(401).json({ message: 'Token no proporcionado.' });
     try {
-      const msg = new Message({ userId: socket.user.id, username: socket.user.username, text: payload.text });
-      await msg.save();
-      io.emit('message', { username: socket.user.username, text: payload.text, createdAt: msg.createdAt });
-    } catch (err) {
-      console.error('Error guardando mensaje:', err);
+      req.user = jwt.verify(token, JWT_SECRET);
+      next();
+    } catch {
+      res.status(403).json({ message: 'Token inválido o expirado.' });
     }
-  });
+  }
 
-  socket.on('typing', (isTyping) => {
-    socket.broadcast.emit('typing', { username: socket.user.username, isTyping });
-  });
+  app.use('/api/auth', authRoutes);
+  app.use('/api/products', authenticateJWT, productRoutes);
+  app.use('/api/chat', authenticateJWT, chatRoutes);
 
-  socket.on('disconnect', () => {
-    console.log('Socket disconnected:', socket.id);
-  });
-});
+  // ===== SOCKET.IO =====
+  io.on('connection', (socket) => {
+    console.log('🟢 Nuevo cliente conectado');
 
-// Conexión a MongoDB + levantar servidor
-mongoose.connect(config.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => {
-    console.log('MongoDB conectado');
-    server.listen(config.PORT, () => {
-      console.log(`Servidor escuchando en http://localhost:${config.PORT}`);
+    socket.on('chatMessage', async (data) => {
+      const msg = new Message({ username: data.username, message: data.message });
+      await msg.save();
+      io.emit('chatMessage', msg);
     });
-  })
-  .catch(err => {
-    console.error('Error conectando a MongoDB:', err);
+
+    socket.on('disconnect', () => {
+      console.log('🔴 Cliente desconectado');
+    });
   });
+
+  server.listen(PORT, () => console.log(`🚀 Servidor en http://localhost:${PORT}`));

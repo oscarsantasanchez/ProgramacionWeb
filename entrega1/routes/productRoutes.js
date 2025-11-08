@@ -1,7 +1,7 @@
 const express = require('express');
 const Product = require('../models/Product');
 const authenticateJWT = require('../middleware/authenticateJWT');
-const checkRole = require('../middleware/checkRole');
+const checkRole = require('../middleware/authorizeRole');
 
 const router = express.Router();
 
@@ -18,8 +18,8 @@ router.get('/', async (req, res) => {
 // Crear un producto (solo admin)
 router.post('/', authenticateJWT, checkRole('admin'), async (req, res) => {
   try {
-    const { name, description, price } = req.body;
-    const newProduct = new Product({ name, description, price });
+    const { title, description, price } = req.body;
+    const newProduct = new Product({ title, description, price });
     await newProduct.save();
     res.status(201).json(newProduct);
   } catch (err) {

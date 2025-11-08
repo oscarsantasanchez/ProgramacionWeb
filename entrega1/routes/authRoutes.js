@@ -1,8 +1,8 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const User = require('../models/User');
-const config = require('../config');
+const { JWT_SECRET, JWT_EXPIRES_IN } = require('../config');
 
 const router = express.Router();
 
@@ -10,23 +10,15 @@ const router = express.Router();
 router.post('/register', async (req, res) => {
   try {
     const { username, email, password, role } = req.body;
+    const existing = await User.findOne({ email });
+    if (existing) return res.status(400).json({ message: 'El correo ya está registrado.' });
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'El usuario ya existe.' });
-    }
-
-    const user = new User({
-      username,
-      email,
-      password,
-      role: role || 'user'
-    });
-
+    const user = new User({ username, email, password, role });
     await user.save();
-    res.status(201).json({ message: 'Usuario registrado con éxito.' });
+
+    res.status(201).json({ message: 'Usuario registrado correctamente.' });
   } catch (err) {
-    res.status(500).json({ message: 'Error al registrar el usuario.', error: err.message });
+    res.status(500).json({ message: 'Error al registrar usuario.' });
   }
 });
 
@@ -34,34 +26,19 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: 'Usuario no encontrado.' });
-    }
+    if (!user) return res.status(400).json({ message: 'Credenciales inválidas.' });
 
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Contraseña incorrecta.' });
-    }
+    const valid = await user.comparePassword(password);
+    if (!valid) return res.status(400).json({ message: 'Contraseña incorrecta.' });
 
-    const token = jwt.sign(
-      { id: user._id, username: user.username, role: user.role },
-      config.jwtSecret,
-      { expiresIn: '2h' }
-    );
-
+    const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
     res.json({
-      message: 'Login exitoso',
       token,
-      user: {
-        id: user._id,
-        username: user.username,
-        role: user.role
-      }
+      user: { username: user.username, email: user.email, role: user.role }
     });
   } catch (err) {
-    res.status(500).json({ message: 'Error en el login.', error: err.message });
+    res.status(500).json({ message: 'Error al iniciar sesión.' });
   }
 });
 

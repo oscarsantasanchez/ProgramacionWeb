@@ -8,10 +8,10 @@
 </head>
 <body>
   <header class="navbar">
-    <h1>Portal de Productos</h1>
+    <h1>🛒 Portal de Productos</h1>
     <nav>
-      <button id="loginBtn">Login</button>
-      <button id="registerBtn">Registro</button>
+      <button id="loginBtn">Iniciar sesión</button>
+      <button id="registerBtn">Registrarse</button>
       <button id="logoutBtn" class="hidden">Cerrar sesión</button>
       <button id="chatBtn" class="hidden">Chat</button>
     </nav>
@@ -19,27 +19,27 @@
 
   <main class="container">
     <section id="authSection">
-      <h2>Bienvenido</h2>
-      <p>Inicia sesión o regístrate para continuar.</p>
+      <div class="welcome-box">
+        <h2>Bienvenido al portal</h2>
+        <p>Accede con tu cuenta o regístrate para comenzar a explorar los productos.</p>
+      </div>
     </section>
 
     <section id="productSection" class="hidden">
-      <h2>Productos</h2>
+      <h2>Lista de productos</h2>
       <div id="productList" class="product-grid"></div>
 
       <div id="adminActions" class="hidden">
-        <h3>Crear nuevo producto</h3>
-        <form id="createProductForm">
-          <input type="text" id="productName" placeholder="Nombre del producto" required>
+        <h3>Gestión de productos (Admin)</h3>
+        <form id="createProductForm" class="admin-form">
+          <input type="text" id="productTitle" placeholder="Título del producto" required>
           <textarea id="productDescription" placeholder="Descripción" required></textarea>
-          <input type="number" id="productPrice" placeholder="Precio" required>
+          <input type="number" id="productPrice" placeholder="Precio (€)" required>
           <button type="submit">Crear producto</button>
         </form>
       </div>
     </section>
   </main>
-
-  <div id="modalContainer" class="modal hidden"></div>
 
   <script src="client.js"></script>
 </body>
