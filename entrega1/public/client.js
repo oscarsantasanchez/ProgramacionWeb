@@ -5,8 +5,8 @@ const registerBtn = document.getElementById('registerBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 const chatBtn = document.getElementById('chatBtn');
 const adminActions = document.getElementById('adminActions');
-
-// Las variables token, role, username se obtendrán dentro de las funciones cuando sea necesario
+const userWelcome = document.getElementById('userWelcome');
+const usernameDisplay = document.getElementById('usernameDisplay');
 
 document.addEventListener('DOMContentLoaded', () => {
   const token = sessionStorage.getItem('token');
@@ -32,12 +32,23 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    // Ocultar botones de login y registro, mostrar elementos de usuario logueado
     document.getElementById('authSection').classList.add('hidden');
     productSection.classList.remove('hidden');
     logoutBtn.classList.remove('hidden');
     chatBtn.classList.remove('hidden');
+    loginBtn.classList.add('hidden');
+    registerBtn.classList.add('hidden');
+    userWelcome.classList.remove('hidden');
+    usernameDisplay.textContent = username;
+    
     if (role === 'admin') adminActions.classList.remove('hidden');
     loadProducts();
+  } else {
+    // Si no hay token, asegurarse de que los botones de auth sean visibles
+    loginBtn.classList.remove('hidden');
+    registerBtn.classList.remove('hidden');
+    userWelcome.classList.add('hidden');
   }
 
   logoutBtn.addEventListener('click', () => {
@@ -129,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+// ... las funciones loadProducts, deleteProduct y editProduct permanecen igual
 async function loadProducts() {
   try {
     const token = sessionStorage.getItem('token');
@@ -238,7 +250,6 @@ async function deleteProduct(id) {
 }
 
 async function editProduct(id) {
-  // Función para editar producto (puedes implementarla según tus necesidades)
   const newTitle = prompt('Nuevo título:');
   if (newTitle) {
     const token = sessionStorage.getItem('token');
