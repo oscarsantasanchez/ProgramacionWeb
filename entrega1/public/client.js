@@ -148,7 +148,7 @@ async function loadProducts() {
       div.classList.add('product-card');
       div.innerHTML = `
         <h3>${p.title}</h3>
-        <p>${p.description}</p>
+        <p>${p.description || 'Sin descripción'}</p>
         <span>$${p.price}</span>
         ${
           role === 'admin'
@@ -166,6 +166,7 @@ async function loadProducts() {
     productList.innerHTML = '<p>Error al cargar los productos</p>';
   }
 }
+
 
 async function deleteProduct(id) {
   if (!confirm('¿Seguro que quieres eliminar este producto?')) return;

@@ -10,11 +10,9 @@ function authenticateJWT(req, res, next) {
 
   const token = authHeader.split(' ')[1];
 
-  jwt.verify(token, config.jwtSecret, (err, decoded) => {
-    if (err) {
-      return res.status(403).json({ message: 'Token inválido o expirado' });
-    }
-
+  try {
+    const decoded = jwt.verify(token, config.JWT_SECRET);
+    
     // Guardamos los datos del usuario (incluido el rol)
     req.user = {
       id: decoded.id,
@@ -23,7 +21,10 @@ function authenticateJWT(req, res, next) {
     };
 
     next();
-  });
+  } catch (err) {
+    console.error('Error verifying token:', err);
+    return res.status(403).json({ message: 'Token inválido o expirado' });
+  }
 }
 
 module.exports = authenticateJWT;

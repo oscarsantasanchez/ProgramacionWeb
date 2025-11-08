@@ -11,6 +11,7 @@ router.get('/', authenticateJWT, async (req, res) => {
     const products = await Product.find();
     res.json(products);
   } catch (err) {
+    console.error('Error al obtener productos:', err);
     res.status(500).json({ message: 'Error al obtener los productos' });
   }
 });
@@ -19,10 +20,16 @@ router.get('/', authenticateJWT, async (req, res) => {
 router.post('/', authenticateJWT, checkRole('admin'), async (req, res) => {
   try {
     const { title, description, price } = req.body;
-    const newProduct = new Product({ title, description, price });
+    const newProduct = new Product({ 
+      title, 
+      description, 
+      price,
+      createdBy: req.user.id
+    });
     await newProduct.save();
     res.status(201).json(newProduct);
   } catch (err) {
+    console.error('Error al crear producto:', err);
     res.status(500).json({ message: 'Error al crear el producto' });
   }
 });
@@ -34,6 +41,7 @@ router.put('/:id', authenticateJWT, checkRole('admin'), async (req, res) => {
     if (!updatedProduct) return res.status(404).json({ message: 'Producto no encontrado' });
     res.json(updatedProduct);
   } catch (err) {
+    console.error('Error al actualizar producto:', err);
     res.status(500).json({ message: 'Error al editar el producto' });
   }
 });
@@ -45,6 +53,7 @@ router.delete('/:id', authenticateJWT, checkRole('admin'), async (req, res) => {
     if (!deletedProduct) return res.status(404).json({ message: 'Producto no encontrado' });
     res.json({ message: 'Producto eliminado con éxito' });
   } catch (err) {
+    console.error('Error al eliminar producto:', err);
     res.status(500).json({ message: 'Error al eliminar el producto' });
   }
 });
@@ -56,6 +65,7 @@ router.get('/:id', authenticateJWT, async (req, res) => {
     if (!product) return res.status(404).json({ message: 'Producto no encontrado' });
     res.json(product);
   } catch (err) {
+    console.error('Error al obtener producto:', err);
     res.status(500).json({ message: 'Error al obtener el producto' });
   }
 });
