@@ -34,8 +34,18 @@
         <h3>Gestión de productos (Admin)</h3>
         <form id="createProductForm" class="admin-form">
           <input type="text" id="productTitle" placeholder="Título del producto" required>
-          <textarea id="productDescription" placeholder="Descripción" required></textarea>
-          <input type="number" id="productPrice" placeholder="Precio (€)" required>
+          <textarea id="productDescription" placeholder="Descripción"></textarea>
+          <input type="number" id="productPrice" placeholder="Precio (€)" step="0.01" required>
+          
+          <div class="file-upload-container">
+            <label for="productImage" class="file-upload-label">
+              <span>📷 Subir imagen (opcional)</span>
+              <input type="file" id="productImage" accept="image/*" class="file-upload-input">
+            </label>
+            <div id="imagePreview" class="image-preview"></div>
+            <button type="button" id="removeImageBtn" class="remove-image-btn hidden">❌ Eliminar imagen</button>
+          </div>
+          
           <button type="submit">Crear producto</button>
         </form>
       </div>
@@ -45,5 +55,4 @@
   <script src="client.js"></script>
 </body>
 </html>
-
 

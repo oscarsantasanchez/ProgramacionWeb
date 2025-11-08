@@ -62,6 +62,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const form = document.getElementById('createProductForm');
   if (form) {
+    const productImageInput = document.getElementById('productImage');
+    const imagePreview = document.getElementById('imagePreview');
+    const removeImageBtn = document.getElementById('removeImageBtn');
+    
+    let currentImageBase64 = '';
+    let currentImageType = '';
+
+    // Manejar selección de imagen
+    productImageInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        // Validar tipo de archivo
+        if (!file.type.startsWith('image/')) {
+          alert('❌ Por favor, selecciona un archivo de imagen válido');
+          this.value = '';
+          return;
+        }
+
+        // Validar tamaño (1MB máximo)
+        if (file.size > 1048576) {
+          alert('❌ La imagen no puede ser mayor a 1MB');
+          this.value = '';
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          currentImageBase64 = e.target.result;
+          currentImageType = file.type;
+          
+          // Mostrar preview
+          imagePreview.innerHTML = `<img src="${currentImageBase64}" alt="Vista previa" class="preview-image">`;
+          removeImageBtn.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Manejar eliminación de imagen
+    removeImageBtn.addEventListener('click', function() {
+      productImageInput.value = '';
+      currentImageBase64 = '';
+      currentImageType = '';
+      imagePreview.innerHTML = '';
+      this.classList.add('hidden');
+    });
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const token = sessionStorage.getItem('token');
@@ -91,17 +138,25 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         console.log('🔄 Enviando solicitud para crear producto...');
         
+        const productData = { 
+          title: title.trim(), 
+          description: description.trim(), 
+          price: parseFloat(price)
+        };
+
+        // Agregar imagen si existe
+        if (currentImageBase64 && currentImageType) {
+          productData.image = currentImageBase64;
+          productData.imageType = currentImageType;
+        }
+
         const res = await fetch('/api/products', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ 
-            title: title.trim(), 
-            description: description.trim(), 
-            price: parseFloat(price) 
-          }),
+          body: JSON.stringify(productData),
         });
 
         console.log('📨 Respuesta del servidor:', res.status);
@@ -111,6 +166,10 @@ document.addEventListener('DOMContentLoaded', () => {
           console.log('✅ Producto creado:', data);
           alert('✅ Producto creado correctamente');
           form.reset();
+          imagePreview.innerHTML = '';
+          removeImageBtn.classList.add('hidden');
+          currentImageBase64 = '';
+          currentImageType = '';
           loadProducts();
         } else {
           // Manejar diferentes códigos de error
@@ -126,7 +185,6 @@ document.addEventListener('DOMContentLoaded', () => {
               const errorData = await res.json();
               errorMessage = errorData.message || errorMessage;
             } catch (e) {
-              // Si no se puede parsear la respuesta JSON
               errorMessage = `Error ${res.status}: ${res.statusText}`;
             }
             alert(`❌ ${errorMessage}`);
@@ -140,13 +198,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// ... las funciones loadProducts, deleteProduct y editProduct permanecen igual
 async function loadProducts() {
   try {
     const token = sessionStorage.getItem('token');
     const role = sessionStorage.getItem('userRole');
     
-    // Verificar que el token existe
     if (!token) {
       console.error('❌ No hay token disponible');
       alert('Por favor, inicia sesión nuevamente');
@@ -167,7 +223,6 @@ async function loadProducts() {
     console.log('Status:', res.status);
     
     if (res.status === 401) {
-      // Token inválido o expirado
       console.error('❌ Token inválido o expirado');
       sessionStorage.clear();
       alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
@@ -194,7 +249,16 @@ async function loadProducts() {
     products.forEach((p) => {
       const div = document.createElement('div');
       div.classList.add('product-card');
+      
+      // Mostrar imagen si existe
+      const imageHtml = p.image ? 
+        `<div class="product-image">
+          <img src="${p.image}" alt="${p.title}" loading="lazy">
+        </div>` : 
+        '<div class="product-image placeholder">📷 Sin imagen</div>';
+      
       div.innerHTML = `
+        ${imageHtml}
         <h3>${p.title}</h3>
         <p>${p.description || 'Sin descripción'}</p>
         <span>$${p.price}</span>
@@ -284,5 +348,4 @@ async function editProduct(id) {
     }
   }
 }
-
 
