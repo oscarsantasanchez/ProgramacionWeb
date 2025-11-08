@@ -6,12 +6,32 @@ const logoutBtn = document.getElementById('logoutBtn');
 const chatBtn = document.getElementById('chatBtn');
 const adminActions = document.getElementById('adminActions');
 
-const token = sessionStorage.getItem('token');
-const role = sessionStorage.getItem('userRole');
-const username = sessionStorage.getItem('username');
+// Las variables token, role, username se obtendrán dentro de las funciones cuando sea necesario
 
 document.addEventListener('DOMContentLoaded', () => {
+  const token = sessionStorage.getItem('token');
+  const role = sessionStorage.getItem('userRole');
+  const username = sessionStorage.getItem('username');
+  
   if (token) {
+    // Verificar que el token sea válido
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const isExpired = payload.exp * 1000 < Date.now();
+      
+      if (isExpired) {
+        console.log('❌ Token expirado');
+        sessionStorage.clear();
+        window.location.reload();
+        return;
+      }
+    } catch (e) {
+      console.error('❌ Error verificando token:', e);
+      sessionStorage.clear();
+      window.location.reload();
+      return;
+    }
+
     document.getElementById('authSection').classList.add('hidden');
     productSection.classList.remove('hidden');
     logoutBtn.classList.remove('hidden');
@@ -33,8 +53,16 @@ document.addEventListener('DOMContentLoaded', () => {
   if (form) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      const token = sessionStorage.getItem('token');
+      
+      if (!token) {
+        alert('❌ No hay sesión activa. Por favor, inicia sesión nuevamente.');
+        sessionStorage.clear();
+        window.location.reload();
+        return;
+      }
 
-      const title = document.getElementById('productTitle').value; // ✅ corregido
+      const title = document.getElementById('productTitle').value;
       const description = document.getElementById('productDescription').value;
       const price = document.getElementById('productPrice').value;
 
@@ -52,8 +80,14 @@ document.addEventListener('DOMContentLoaded', () => {
         form.reset();
         loadProducts();
       } else {
-        const error = await res.json();
-        alert(`❌ Error al crear el producto: ${error.message || 'Intenta de nuevo'}`);
+        if (res.status === 401) {
+          alert('❌ Sesión expirada. Por favor, inicia sesión nuevamente.');
+          sessionStorage.clear();
+          window.location.reload();
+        } else {
+          const error = await res.json();
+          alert(`❌ Error al crear el producto: ${error.message || 'Intenta de nuevo'}`);
+        }
       }
     });
   }
@@ -61,11 +95,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadProducts() {
   try {
-    const res = await fetch('/api/products');
-    if (!res.ok) throw new Error('Error al cargar productos');
+    const token = sessionStorage.getItem('token');
+    const role = sessionStorage.getItem('userRole');
+    
+    // Verificar que el token existe
+    if (!token) {
+      console.error('❌ No hay token disponible');
+      alert('Por favor, inicia sesión nuevamente');
+      sessionStorage.clear();
+      window.location.reload();
+      return;
+    }
+
+    console.log('🔍 Cargando productos...');
+    
+    const res = await fetch('/api/products', {
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    console.log('Status:', res.status);
+    
+    if (res.status === 401) {
+      // Token inválido o expirado
+      console.error('❌ Token inválido o expirado');
+      sessionStorage.clear();
+      alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+      window.location.reload();
+      return;
+    }
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('Error response:', errorText);
+      throw new Error(`Error al cargar productos: ${res.status}`);
+    }
 
     const products = await res.json();
+    console.log('✅ Productos cargados:', products);
+    
     productList.innerHTML = '';
+
+    if (products.length === 0) {
+      productList.innerHTML = '<p>No hay productos disponibles</p>';
+      return;
+    }
 
     products.forEach((p) => {
       const div = document.createElement('div');
@@ -76,34 +152,90 @@ async function loadProducts() {
         <span>$${p.price}</span>
         ${
           role === 'admin'
-            ? `
-          <div class="admin-buttons">
-            <button onclick="editProduct('${p._id}')">Editar</button>
-            <button onclick="deleteProduct('${p._id}')">Eliminar</button>
-          </div>
-        `
+            ? `<div class="admin-buttons">
+                 <button onclick="editProduct('${p._id}')">Editar</button>
+                 <button onclick="deleteProduct('${p._id}')">Eliminar</button>
+               </div>`
             : ''
         }
       `;
       productList.appendChild(div);
     });
   } catch (error) {
-    console.error('Error cargando productos:', error);
+    console.error('❌ Error cargando productos:', error);
+    productList.innerHTML = '<p>Error al cargar los productos</p>';
   }
 }
 
 async function deleteProduct(id) {
   if (!confirm('¿Seguro que quieres eliminar este producto?')) return;
 
+  const token = sessionStorage.getItem('token');
+  
+  if (!token) {
+    alert('❌ No hay sesión activa');
+    sessionStorage.clear();
+    window.location.reload();
+    return;
+  }
+
   const res = await fetch(`/api/products/${id}`, {
     method: 'DELETE',
-    headers: { Authorization: `Bearer ${token}` },
+    headers: { 
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
   });
 
   if (res.ok) {
-    alert('Producto eliminado correctamente');
+    alert('✅ Producto eliminado correctamente');
     loadProducts();
   } else {
-    alert('Error al eliminar producto');
+    if (res.status === 401) {
+      alert('❌ Sesión expirada. Por favor, inicia sesión nuevamente.');
+      sessionStorage.clear();
+      window.location.reload();
+    } else {
+      alert('❌ Error al eliminar producto');
+    }
   }
 }
+
+async function editProduct(id) {
+  // Función para editar producto (puedes implementarla según tus necesidades)
+  const newTitle = prompt('Nuevo título:');
+  if (newTitle) {
+    const token = sessionStorage.getItem('token');
+    
+    if (!token) {
+      alert('❌ No hay sesión activa');
+      sessionStorage.clear();
+      window.location.reload();
+      return;
+    }
+
+    const res = await fetch(`/api/products/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ title: newTitle })
+    });
+
+    if (res.ok) {
+      alert('✅ Producto actualizado correctamente');
+      loadProducts();
+    } else {
+      if (res.status === 401) {
+        alert('❌ Sesión expirada. Por favor, inicia sesión nuevamente.');
+        sessionStorage.clear();
+        window.location.reload();
+      } else {
+        alert('❌ Error al actualizar producto');
+      }
+    }
+  }
+}
+
+

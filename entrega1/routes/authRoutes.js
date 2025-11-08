@@ -32,7 +32,13 @@ router.post('/login', async (req, res) => {
     const valid = await user.comparePassword(password);
     if (!valid) return res.status(400).json({ message: 'Contraseña incorrecta.' });
 
-    const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+    // ✅ Token ahora incluye username
+    const token = jwt.sign(
+      { id: user._id, username: user.username, role: user.role },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN }
+    );
+
     res.json({
       token,
       user: { username: user.username, email: user.email, role: user.role }
@@ -43,3 +49,4 @@ router.post('/login', async (req, res) => {
 });
 
 module.exports = router;
+
