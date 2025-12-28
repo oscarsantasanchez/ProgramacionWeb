@@ -5,54 +5,83 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Portal de Productos</title>
   <link rel="stylesheet" href="styles.css">
+  <script src="graphql/client.js" type="module"></script>
 </head>
 <body>
   <header class="navbar">
     <h1>🛒 Portal de Productos</h1>
-    <nav>
-      <span id="userWelcome" class="hidden">Bienvenido, <strong id="usernameDisplay"></strong></span>
-      <button id="loginBtn">Iniciar sesión</button>
-      <button id="registerBtn">Registrarse</button>
-      <button id="logoutBtn" class="hidden">Cerrar sesión</button>
-      <button id="chatBtn" class="hidden">💬 Chat</button>
-    </nav>
+    <button id="loginBtn">Iniciar sesión</button>
+    <button id="logoutBtn" class="hidden">Cerrar sesión</button>
+    <button id="cartBtn">Ver carrito</button>
   </header>
 
   <main class="container">
-    <section id="authSection">
-      <div class="welcome-box">
-        <h2>Bienvenido al portal</h2>
-        <p>Accede con tu cuenta o regístrate para comenzar a explorar los productos.</p>
-      </div>
-    </section>
-
-    <section id="productSection" class="hidden">
+    <section id="productSection">
       <h2>Lista de productos</h2>
       <div id="productList" class="product-grid"></div>
+    </section>
 
-      <div id="adminActions" class="hidden">
-        <h3>Gestión de productos (Admin)</h3>
-        <form id="createProductForm" class="admin-form">
-          <input type="text" id="productTitle" placeholder="Título del producto" required>
-          <textarea id="productDescription" placeholder="Descripción"></textarea>
-          <input type="number" id="productPrice" placeholder="Precio (€)" step="0.01" required>
-          
-          <div class="file-upload-container">
-            <label for="productImage" class="file-upload-label">
-              <span>📷 Subir imagen (opcional)</span>
-              <input type="file" id="productImage" accept="image/*" class="file-upload-input">
-            </label>
-            <div id="imagePreview" class="image-preview"></div>
-            <button type="button" id="removeImageBtn" class="remove-image-btn hidden">❌ Eliminar imagen</button>
-          </div>
-          
-          <button type="submit">Crear producto</button>
-        </form>
-      </div>
+    <section id="cartSection" class="hidden">
+      <h2>Tu carrito</h2>
+      <div id="cartItems"></div>
+      <button id="placeOrderBtn">Realizar pedido</button>
     </section>
   </main>
 
-  <script src="client.js"></script>
+  <script>
+    // Mostrar productos al cargar la página
+    document.addEventListener('DOMContentLoaded', async () => {
+      const products = await getProducts();
+      const productList = document.getElementById('productList');
+
+      products.forEach(product => {
+        const productCard = document.createElement('div');
+        productCard.classList.add('product-card');
+        productCard.innerHTML = `
+          <h3>${product.title}</h3>
+          <p>${product.description}</p>
+          <span>$${product.price}</span>
+          <button onclick="addToCart(${product.id}, '${product.title}', ${product.price})">Añadir al carrito</button>
+        `;
+        productList.appendChild(productCard);
+      });
+    });
+
+    let cart = [];
+
+    // Función para añadir productos al carrito
+    function addToCart(id, title, price) {
+      const product = { id, title, price, quantity: 1 };
+      cart.push(product);
+      console.log('Producto añadido al carrito:', product);
+      updateCart();
+    }
+
+    // Actualizar la visualización del carrito
+    function updateCart() {
+      const cartSection = document.getElementById('cartSection');
+      const cartItems = document.getElementById('cartItems');
+      cartItems.innerHTML = '';  // Limpiar los elementos actuales
+
+      cart.forEach(item => {
+        const itemDiv = document.createElement('div');
+        itemDiv.innerHTML = `
+          <span>${item.title}</span> - $${item.price} x ${item.quantity}
+        `;
+        cartItems.appendChild(itemDiv);
+      });
+
+      cartSection.classList.remove('hidden');
+    }
+
+    // Realizar pedido
+    document.getElementById('placeOrderBtn').addEventListener('click', async () => {
+      const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+      const productIds = cart.map(item => item.id);
+
+      await createOrder(productIds, total);
+      alert('Pedido realizado con éxito');
+    });
+  </script>
 </body>
 </html>
-
