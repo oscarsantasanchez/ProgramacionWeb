@@ -1,11 +1,11 @@
 const express = require('express');
 const Product = require('../models/Product');
 const authenticateJWT = require('../middleware/authenticateJWT');
-const checkRole = require('../middleware/authorizeRole');
+const authorizeRole = require('../middleware/authorizeRole');
 
 const router = express.Router();
 
-// GET todos los productos (requiere token)
+// Obtener todos los productos (requiere autenticación)
 router.get('/', authenticateJWT, async (req, res) => {
   try {
     const products = await Product.find();
@@ -16,47 +16,31 @@ router.get('/', authenticateJWT, async (req, res) => {
   }
 });
 
-// POST crear producto (solo admin) - con imagen opcional en base64
-router.post('/', authenticateJWT, checkRole('admin'), async (req, res) => {
+// Crear un nuevo producto (requiere ser SuperAdmin)
+router.post('/', authenticateJWT, authorizeRole('Administrador'), async (req, res) => {
   try {
     const { title, description, price, image, imageType } = req.body;
-    
+
     // Validar campos requeridos
     if (!title || !price) {
       return res.status(400).json({ message: 'Título y precio son requeridos' });
     }
 
-    const productData = { 
-      title, 
-      description: description || '', 
+    const productData = {
+      title,
+      description: description || '',
       price: parseFloat(price),
       createdBy: req.user.id
     };
 
-    // Si se proporciona una imagen en base64
     if (image && imageType) {
-      // Validar que el tipo de imagen sea válido
-      const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-      if (!validImageTypes.includes(imageType)) {
-        return res.status(400).json({ message: 'Tipo de imagen no válido' });
-      }
-      
-      // Validar tamaño máximo (1MB)
-      const base64Length = image.length - (image.indexOf(',') + 1);
-      const padding = image.endsWith('==') ? 2 : image.endsWith('=') ? 1 : 0;
-      const fileSize = (base64Length * 3) / 4 - padding;
-      
-      if (fileSize > 1048576) { // 1MB
-        return res.status(400).json({ message: 'La imagen no puede ser mayor a 1MB' });
-      }
-
       productData.image = image;
       productData.imageType = imageType;
     }
 
     const newProduct = new Product(productData);
     await newProduct.save();
-    
+
     console.log('✅ Producto creado:', newProduct.title);
     res.status(201).json(newProduct);
   } catch (err) {
@@ -65,34 +49,27 @@ router.post('/', authenticateJWT, checkRole('admin'), async (req, res) => {
   }
 });
 
-// PUT actualizar producto (solo admin) - con imagen opcional
-router.put('/:id', authenticateJWT, checkRole('admin'), async (req, res) => {
+// Actualizar un producto (requiere ser SuperAdmin)
+router.put('/:id', authenticateJWT, authorizeRole('Administrador'), async (req, res) => {
   try {
     const { title, description, price, image, imageType } = req.body;
-    
+
     const updateData = {};
     if (title) updateData.title = title;
     if (description !== undefined) updateData.description = description;
     if (price) updateData.price = parseFloat(price);
-    
-    // Si se proporciona una nueva imagen
+
     if (image && imageType) {
-      const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-      if (!validImageTypes.includes(imageType)) {
-        return res.status(400).json({ message: 'Tipo de imagen no válido' });
-      }
-      
       updateData.image = image;
       updateData.imageType = imageType;
     } else if (image === '') {
-      // Si se envía image vacío, eliminar la imagen
       updateData.image = '';
       updateData.imageType = '';
     }
 
     const updatedProduct = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true });
     if (!updatedProduct) return res.status(404).json({ message: 'Producto no encontrado' });
-    
+
     res.json(updatedProduct);
   } catch (err) {
     console.error('Error al actualizar producto:', err);
@@ -100,8 +77,8 @@ router.put('/:id', authenticateJWT, checkRole('admin'), async (req, res) => {
   }
 });
 
-// DELETE producto (solo admin)
-router.delete('/:id', authenticateJWT, checkRole('admin'), async (req, res) => {
+// Eliminar un producto (requiere ser SuperAdmin)
+router.delete('/:id', authenticateJWT, authorizeRole('Administrador'), async (req, res) => {
   try {
     const deletedProduct = await Product.findByIdAndDelete(req.params.id);
     if (!deletedProduct) return res.status(404).json({ message: 'Producto no encontrado' });
@@ -109,18 +86,6 @@ router.delete('/:id', authenticateJWT, checkRole('admin'), async (req, res) => {
   } catch (err) {
     console.error('Error al eliminar producto:', err);
     res.status(500).json({ message: 'Error al eliminar el producto' });
-  }
-});
-
-// GET producto individual
-router.get('/:id', authenticateJWT, async (req, res) => {
-  try {
-    const product = await Product.findById(req.params.id);
-    if (!product) return res.status(404).json({ message: 'Producto no encontrado' });
-    res.json(product);
-  } catch (err) {
-    console.error('Error al obtener producto:', err);
-    res.status(500).json({ message: 'Error al obtener el producto' });
   }
 });
 

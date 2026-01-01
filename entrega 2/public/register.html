@@ -13,14 +13,13 @@
       <input type="text" id="username" placeholder="Usuario" required>
       <input type="email" id="email" placeholder="Correo" required>
       <input type="password" id="password" placeholder="Contraseña" required>
-      <select id="role" required>
-        <option value="user" selected>Usuario</option>
-        <option value="admin">Administrador</option>
-      </select>
+      <!-- El campo de rol se elimina ya que todos los usuarios son 'Cliente' por defecto -->
+      <p>Al registrarte, recibirás automáticamente el rol de <strong>Cliente</strong>.</p>
       <button type="submit">Registrarse</button>
       <p>¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a></p>
     </form>
   </div>
+
   <script>
     document.getElementById('registerForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -28,17 +27,16 @@
       const username = document.getElementById('username').value;
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
-      const role = document.getElementById('role').value;
 
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password, role })
+        body: JSON.stringify({ username, email, password })
       });
 
       const data = await res.json();
       alert(data.message || 'Registro completado.');
-      if (res.ok) window.location.href = 'login.html';
+      if (res.ok) window.location.href = 'login.html';  // Redirigir al login después de registrarse
     });
   </script>
 </body>

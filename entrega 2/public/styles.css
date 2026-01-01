@@ -2,23 +2,18 @@
    🌐 VARIABLES Y ESTILOS GLOBALES MODERNOS
 ============================ */
 :root {
-  --primary-color: #6366f1;
-  --primary-hover: #4f46e5;
-  --secondary-color: #f8fafc;
-  --accent-color: #06d6a0;
-  --text-color: #1e293b;
-  --text-light: #64748b;
-  --border-color: #e2e8f0;
-  --danger-color: #ef4444;
-  --success-color: #10b981;
-  --warning-color: #f59e0b;
-  --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --hover-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
-  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  --font-primary: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --primary-color: #FFD700;  /* Amarillo Neón */
+  --secondary-color: #333333; /* Fondo negro */
+  --text-color: #FFFFFF; /* Texto en blanco */
+  --border-color: #555555; /* Bordes suaves */
+  --hover-color: #FFCC00; /* Amarillo brillante en hover */
+  --font-primary: 'Arial', sans-serif;
+  --font-secondary: 'Roboto', sans-serif;
 }
 
+/* ============================
+   ESTILO GENERAL
+============================ */
 * {
   margin: 0;
   padding: 0;
@@ -28,95 +23,78 @@
 body {
   font-family: var(--font-primary);
   color: var(--text-color);
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background-color: var(--secondary-color);
   min-height: 100vh;
   line-height: 1.6;
 }
 
 /* ============================
-   🔝 NAVBAR MODERNA
+   NAVBAR PROFESIONAL
 ============================ */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--gradient-primary);
-  color: white;
+  background-color: var(--secondary-color);
+  color: var(--text-color);
   padding: 1rem 2rem;
-  box-shadow: var(--card-shadow);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
 .navbar h1 {
   font-size: 1.5rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  font-weight: bold;
 }
 
 .navbar nav {
   display: flex;
-  gap: 0.8rem;
+  gap: 1rem;
 }
 
 .navbar button {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: transparent;
+  color: var(--text-color);
+  border: 1px solid var(--primary-color);
   padding: 0.6rem 1.2rem;
-  border-radius: 12px;
+  border-radius: 5px;
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 500;
-  backdrop-filter: blur(10px);
 }
 
 .navbar button:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background-color: var(--primary-color);
+  color: var(--secondary-color);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.hidden {
-  display: none !important;
 }
 
 /* ============================
-   🏠 SECCIÓN DE BIENVENIDA MODERNA
+   SECCIÓN DE BIENVENIDA
 ============================ */
 .welcome-box {
   text-align: center;
   margin: 4rem auto;
-  background: white;
+  background-color: var(--secondary-color);
   padding: 3rem;
-  border-radius: 20px;
+  border-radius: 10px;
   max-width: 500px;
-  box-shadow: var(--card-shadow);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
 }
 
 .welcome-box h2 {
   font-size: 2rem;
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
   margin-bottom: 1rem;
-  font-weight: 700;
+  font-weight: bold;
 }
 
 .welcome-box p {
-  color: var(--text-light);
+  color: var(--text-color);
   font-size: 1.1rem;
 }
 
 /* ============================
-   🛒 PRODUCTOS - DISEÑO MODERNO
+   SECCIÓN DE PRODUCTOS
 ============================ */
 .container {
   max-width: 1200px;
@@ -128,45 +106,26 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
-  margin-top: 2rem;
 }
 
 .product-card {
-  background: white;
+  background: var(--secondary-color);
   padding: 1.5rem;
-  border-radius: 16px;
-  box-shadow: var(--card-shadow);
-  transition: all 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
   position: relative;
-  overflow: hidden;
-}
-
-.product-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: var(--gradient-primary);
-}
-
-.product-card:hover {
-  transform: translateY(-8px);
-  box-shadow: var(--hover-shadow);
 }
 
 .product-card h3 {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   color: var(--primary-color);
   margin-bottom: 0.5rem;
   font-weight: 600;
 }
 
 .product-card p {
-  color: var(--text-light);
+  color: var(--text-color);
   margin-bottom: 1rem;
   line-height: 1.5;
 }
@@ -175,142 +134,100 @@ body {
   font-size: 1.4rem;
   font-weight: 700;
   color: var(--text-color);
-  display: block;
-  margin-top: 1rem;
 }
 
 .admin-buttons {
   display: flex;
-  gap: 0.5rem;
+  gap: 1rem;
   margin-top: 1rem;
 }
 
 .admin-buttons button {
   flex: 1;
   border: none;
-  border-radius: 10px;
-  padding: 0.6rem;
+  border-radius: 5px;
+  padding: 0.8rem;
   cursor: pointer;
   font-weight: 600;
-  color: white;
+  background-color: var(--primary-color);
+  color: var(--secondary-color);
   transition: all 0.3s ease;
-  text-transform: uppercase;
-  font-size: 0.8rem;
-  letter-spacing: 0.5px;
 }
 
-.admin-buttons button:first-child {
-  background: var(--warning-color);
-}
-
-.admin-buttons button:first-child:hover {
-  background: #d97706;
-  transform: translateY(-2px);
-}
-
-.admin-buttons button:last-child {
-  background: var(--danger-color);
-}
-
-.admin-buttons button:last-child:hover {
-  background: #dc2626;
-  transform: translateY(-2px);
+.admin-buttons button:hover {
+  background-color: var(--hover-color);
 }
 
 /* ============================
-   ⚙️ FORMULARIO DE ADMIN MODERNO
+   FORMULARIO DE ADMINISTRACIÓN
 ============================ */
 .admin-form {
-  background: white;
-  border-radius: 20px;
+  background: var(--secondary-color);
+  border-radius: 10px;
   padding: 2rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
   margin-top: 2rem;
-  box-shadow: var(--card-shadow);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(10px);
 }
 
 .admin-form h3 {
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 1.5rem;
   font-size: 1.5rem;
-  font-weight: 700;
+  margin-bottom: 1.5rem;
+  font-weight: bold;
+  color: var(--primary-color);
 }
 
 .admin-form input,
 .admin-form textarea {
   width: 100%;
   padding: 1rem;
-  border: 2px solid var(--border-color);
-  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
   margin-bottom: 1rem;
   font-size: 1rem;
-  transition: all 0.3s ease;
-  background: var(--secondary-color);
-}
-
-.admin-form input:focus,
-.admin-form textarea:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-  transform: translateY(-2px);
 }
 
 .admin-form button {
-  background: var(--gradient-primary);
-  color: white;
+  background: var(--primary-color);
+  color: var(--secondary-color);
   border: none;
   padding: 1rem 2rem;
-  border-radius: 12px;
+  border-radius: 5px;
   cursor: pointer;
-  font-size: 1rem;
   font-weight: 600;
   transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .admin-form button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
+  background-color: var(--hover-color);
 }
 
 /* ============================
-   🔐 AUTENTICACIÓN MODERNA
+   AUTENTICACIÓN
 ============================ */
 .auth-body {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: var(--gradient-primary);
-  padding: 1rem;
+  background-color: var(--secondary-color);
 }
 
 .auth-container {
-  background: white;
+  background: var(--secondary-color);
   padding: 3rem;
-  border-radius: 24px;
-  box-shadow: var(--hover-shadow);
+  border-radius: 10px;
   width: 100%;
   max-width: 400px;
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
 }
 
 .auth-container h2 {
   margin-bottom: 2rem;
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
   font-size: 2rem;
-  font-weight: 700;
+  color: var(--primary-color);
 }
 
 .auth-container form {
@@ -319,369 +236,66 @@ body {
   gap: 1rem;
 }
 
-.auth-container input,
-.auth-container select {
+.auth-container input {
   padding: 1rem;
-  border: 2px solid var(--border-color);
-  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
   font-size: 1rem;
-  transition: all 0.3s ease;
-  background: var(--secondary-color);
-}
-
-.auth-container input:focus,
-.auth-container select:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-  transform: translateY(-2px);
 }
 
 .auth-container button {
-  background: var(--gradient-primary);
-  color: white;
+  background: var(--primary-color);
+  color: var(--secondary-color);
   border: none;
   padding: 1rem;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 1rem;
+  border-radius: 5px;
   cursor: pointer;
+  font-weight: 600;
   transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-top: 1rem;
 }
 
 .auth-container button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
-}
-
-.auth-container p {
-  margin-top: 1.5rem;
-  color: var(--text-light);
-}
-
-.auth-container a {
-  color: var(--primary-color);
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.3s ease;
-}
-
-.auth-container a:hover {
-  color: var(--primary-hover);
+  background-color: var(--hover-color);
 }
 
 /* ============================
-   💬 CHAT MODERNO
+   CHAT
 ============================ */
 .chat-container {
   max-width: 800px;
   margin: 2rem auto;
-  background: white;
-  border-radius: 24px;
-  box-shadow: var(--hover-shadow);
+  background-color: var(--secondary-color);
+  border-radius: 10px;
   padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  height: 80vh;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(10px);
 }
 
 .chat-box {
   flex: 1;
   overflow-y: auto;
   padding: 1.5rem;
-  border: 2px solid var(--border-color);
-  border-radius: 16px;
-  background: var(--secondary-color);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background-color: #444;
+  color: var(--text-color);
   margin-bottom: 1.5rem;
-  scrollbar-width: thin;
-  scrollbar-color: var(--primary-color) var(--border-color);
-}
-
-.chat-box::-webkit-scrollbar {
-  width: 6px;
-}
-
-.chat-box::-webkit-scrollbar-track {
-  background: var(--border-color);
-  border-radius: 3px;
-}
-
-.chat-box::-webkit-scrollbar-thumb {
-  background: var(--primary-color);
-  border-radius: 3px;
 }
 
 .chat-message {
   margin-bottom: 1rem;
-  padding: 1rem 1.2rem;
-  border-radius: 16px;
-  max-width: 70%;
-  word-wrap: break-word;
-  animation: messageAppear 0.3s ease;
-  position: relative;
-}
-
-@keyframes messageAppear {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.chat-message.user {
-  background: white;
-  border: 2px solid var(--border-color);
-  margin-right: auto;
-}
-
-.chat-message.self {
-  background: var(--gradient-primary);
-  color: white;
-  margin-left: auto;
-}
-
-.chat-message.self strong {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.chat-form {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-}
-
-.chat-form input {
-  flex: 1;
   padding: 1rem;
-  border: 2px solid var(--border-color);
-  border-radius: 12px;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  background: var(--secondary-color);
+  border-radius: 5px;
+  background: var(--primary-color);
+  color: var(--secondary-color);
 }
 
-.chat-form input:focus {
+/* ============================
+   BOTONES Y EFECTOS GENERALES
+============================ */
+button:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
-.chat-form button {
-  background: var(--gradient-primary);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 1rem 1.5rem;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.chat-form button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
-}
-
-/* ============================
-   📱 RESPONSIVE DESIGN
-============================ */
-@media (max-width: 768px) {
-  .navbar {
-    flex-direction: column;
-    gap: 1rem;
-    padding: 1rem;
-  }
-
-  .navbar nav {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .container {
-    padding: 0.5rem;
-  }
-
-  .product-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .auth-container {
-    padding: 2rem;
-    margin: 1rem;
-  }
-
-  .chat-container {
-    margin: 1rem;
-    height: 85vh;
-    padding: 1.5rem;
-  }
-
-  .chat-message {
-    max-width: 85%;
-  }
-
-  .admin-form {
-    padding: 1.5rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .navbar h1 {
-    font-size: 1.2rem;
-  }
-
-  .navbar button {
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-  }
-
-  .welcome-box {
-    margin: 2rem 1rem;
-    padding: 2rem;
-  }
-
-  .auth-container {
-    padding: 1.5rem;
-  }
-}
-
-/* ============================
-   🎨 EFECTOS ESPECIALES
-============================ */
-.loading {
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-.pulse {
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
-  }
-}
-
-/* Badge para roles */
-.role-badge {
-  display: inline-block;
-  padding: 0.3rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.role-badge.admin {
-  background: var(--gradient-secondary);
-  color: white;
-}
-
-.role-badge.user {
-  background: var(--border-color);
-  color: var(--text-light);
-}
-
-/* ============================
-   🖼️ ESTILOS PARA IMÁGENES DE PRODUCTOS
-============================ */
-.file-upload-container {
-  margin-bottom: 1rem;
-}
-
-.file-upload-label {
-  display: inline-block;
-  padding: 0.8rem 1.5rem;
-  background: var(--gradient-primary);
-  color: white;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 600;
-  text-align: center;
-}
-
-.file-upload-label:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
-}
-
-.file-upload-input {
+.hidden {
   display: none;
 }
-
-.image-preview {
-  margin-top: 1rem;
-  text-align: center;
-}
-
-.preview-image {
-  max-width: 200px;
-  max-height: 200px;
-  border-radius: 12px;
-  box-shadow: var(--card-shadow);
-}
-
-.remove-image-btn {
-  background: var(--danger-color);
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-top: 0.5rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.remove-image-btn:hover {
-  background: #dc2626;
-  transform: translateY(-2px);
-}
-
-.product-image {
-  width: 100%;
-  height: 200px;
-  border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--secondary-color);
-  border: 2px dashed var(--border-color);
-}
-
-.product-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.product-image.placeholder {
-  color: var(--text-light);
-  font-size: 2rem;
-}
-
-

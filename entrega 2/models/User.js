@@ -5,7 +5,8 @@ const UserSchema = new mongoose.Schema({
   username: { type: String, required: true },
   email:    { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role:     { type: String, enum: ['admin', 'user'], default: 'user' }
+  role:     { type: String, enum: ['Administrador', 'Logística', 'Cliente'], default: 'Cliente' },
+  orderHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order' }] // Historial de pedidos
 }, { timestamps: true });
 
 UserSchema.pre('save', async function(next) {

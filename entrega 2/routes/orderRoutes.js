@@ -1,71 +1,91 @@
 const express = require('express');
 const Order = require('../models/Order');
-const authenticateJWT = require('../middleware/authenticateJWT'); // Middleware para la autenticación
+const Product = require('../models/Product');
+const authenticateJWT = require('../middleware/authenticateJWT');
+const authorizeRole = require('../middleware/authorizeRole');
 
 const router = express.Router();
 
-// Obtener todos los pedidos (solo administradores)
-router.get('/', authenticateJWT, async (req, res) => {
+// Obtener todos los pedidos (requiere autenticación y puede ser visto por SuperAdmin o Logística)
+router.get('/', authenticateJWT, authorizeRole('Administrador'), async (req, res) => {
   try {
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Acceso denegado. Solo los administradores pueden ver todos los pedidos.' });
-    }
-    const orders = await Order.find().populate('userId', 'username email');
+    const orders = await Order.find().populate('user', 'username email').populate('products.productId', 'title price');
     res.json(orders);
   } catch (err) {
-    res.status(500).json({ message: 'Error al obtener los pedidos.' });
+    console.error('Error al obtener pedidos:', err);
+    res.status(500).json({ message: 'Error al obtener los pedidos' });
   }
 });
 
-// Obtener los pedidos de un usuario (usuario autenticado)
-router.get('/my-orders', authenticateJWT, async (req, res) => {
-  try {
-    const orders = await Order.find({ userId: req.user.id }).populate('products.productId', 'title price');
-    res.json(orders);
-  } catch (err) {
-    res.status(500).json({ message: 'Error al obtener los pedidos del usuario.' });
-  }
-});
-
-// Crear un nuevo pedido
+// Crear un nuevo pedido (requiere ser cliente, ya que el cliente realiza el pedido)
 router.post('/', authenticateJWT, async (req, res) => {
   try {
-    const { products, total } = req.body;
+    const { products } = req.body;
 
-    if (!products || !total) {
-      return res.status(400).json({ message: 'Faltan productos o total en la solicitud.' });
+    if (!products || products.length === 0) {
+      return res.status(400).json({ message: 'No se han añadido productos al pedido' });
     }
 
-    const order = new Order({
-      userId: req.user.id,
-      products,
+    // Calcular el total
+    let total = 0;
+    const productDetails = [];
+    for (let product of products) {
+      const productData = await Product.findById(product.productId);
+      if (!productData) {
+        return res.status(400).json({ message: `Producto con ID ${product.productId} no encontrado` });
+      }
+      const price = productData.price;
+      total += price * product.quantity;
+      productDetails.push({ productId: product.productId, quantity: product.quantity, price });
+    }
+
+    const newOrder = new Order({
+      user: req.user.id,
+      products: productDetails,
+      status: 'pending', // Estado inicial
       total,
-      status: 'pending'
     });
 
-    const newOrder = await order.save();
+    await newOrder.save();
+
+    // Actualizar historial de pedidos del usuario
+    await User.findByIdAndUpdate(req.user.id, { $push: { orderHistory: newOrder._id } });
+
     res.status(201).json(newOrder);
   } catch (err) {
-    res.status(500).json({ message: 'Error al crear el pedido.' });
+    console.error('Error al crear el pedido:', err);
+    res.status(500).json({ message: 'Error al crear el pedido' });
   }
 });
 
-// Actualizar el estado de un pedido (solo admin)
-router.put('/:id', authenticateJWT, async (req, res) => {
+// Actualizar el estado de un pedido (requiere ser SuperAdmin o Logística)
+router.put('/:id', authenticateJWT, authorizeRole('Administrador'), async (req, res) => {
   try {
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Acceso denegado. Solo los administradores pueden actualizar el estado de un pedido.' });
-    }
-
     const { status } = req.body;
-    const order = await Order.findByIdAndUpdate(req.params.id, { status }, { new: true });
-    if (!order) {
-      return res.status(404).json({ message: 'Pedido no encontrado.' });
+
+    if (!status || !['pending', 'completed'].includes(status)) {
+      return res.status(400).json({ message: 'Estado inválido' });
     }
 
-    res.json(order);
+    const updatedOrder = await Order.findByIdAndUpdate(req.params.id, { status }, { new: true });
+    if (!updatedOrder) return res.status(404).json({ message: 'Pedido no encontrado' });
+
+    res.json(updatedOrder);
   } catch (err) {
-    res.status(500).json({ message: 'Error al actualizar el estado del pedido.' });
+    console.error('Error al actualizar pedido:', err);
+    res.status(500).json({ message: 'Error al actualizar el pedido' });
+  }
+});
+
+// Eliminar un pedido (requiere ser SuperAdmin)
+router.delete('/:id', authenticateJWT, authorizeRole('Administrador'), async (req, res) => {
+  try {
+    const deletedOrder = await Order.findByIdAndDelete(req.params.id);
+    if (!deletedOrder) return res.status(404).json({ message: 'Pedido no encontrado' });
+    res.json({ message: 'Pedido eliminado correctamente' });
+  } catch (err) {
+    console.error('Error al eliminar pedido:', err);
+    res.status(500).json({ message: 'Error al eliminar el pedido' });
   }
 });
 

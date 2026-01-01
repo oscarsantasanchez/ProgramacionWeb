@@ -22,7 +22,7 @@ function authenticateJWT(req, res, next) {
 
     next();
   } catch (err) {
-    console.error('Error verifying token:', err);
+    console.error('Error al verificar el token:', err);
     return res.status(403).json({ message: 'Token inválido o expirado' });
   }
 }
