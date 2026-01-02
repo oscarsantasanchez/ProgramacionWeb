@@ -6,20 +6,23 @@ const { graphqlHTTP } = require('express-graphql');
 const { Server } = require('socket.io');
 const { PORT, MONGO_URI } = require('./config');
 
-// Importar las rutas
+// Rutas REST
 const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
 const chatRoutes = require('./routes/chatRoutes');
-const userRoutes = require('./routes/userRoutes');  // Importa las rutas de usuarios
+const userRoutes = require('./routes/userRoutes');
 
-// Importar el esquema GraphQL
+// GraphQL
 const schema = require('./graphql/schema');
 
-// Crear la aplicación y el servidor HTTP
+// Modelos
+const Message = require('./models/Message');
+
+// Crear app y servidor HTTP
 const app = express();
 const server = http.createServer(app);
 
-// Configurar Socket.IO
+// Socket.IO
 const io = new Server(server, { cors: { origin: '*' } });
 
 // Conexión a MongoDB
@@ -32,29 +35,50 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// Rutas REST (Autenticación, Productos, Chat y Usuarios)
+// Rutas REST
 app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes); // authenticateJWT ya aplicado dentro de productRoutes
-app.use('/api/chat', chatRoutes); // authenticateJWT ya aplicado dentro de chatRoutes
-app.use('/api/users', userRoutes); // Ruta para la gestión de usuarios
+app.use('/api/products', productRoutes);
+app.use('/api/chat', chatRoutes);
+app.use('/api/users', userRoutes);
 
-// Rutas GraphQL
+// GraphQL
 app.use('/graphql', graphqlHTTP({
   schema,
-  graphiql: true, // Habilita la interfaz de GraphiQL para pruebas
+  graphiql: true,
 }));
 
-// Configuración de Socket.IO para el chat en tiempo real
-const Message = require('./models/Message');
-
+// ===============================
+// SOCKET.IO — CHAT EN TIEMPO REAL
+// ===============================
 io.on('connection', (socket) => {
   console.log('🟢 Nuevo cliente conectado');
 
-  // Manejo de mensajes de chat
   socket.on('chatMessage', async (data) => {
-    const msg = new Message({ username: data.username, message: data.message });
-    await msg.save();
-    io.emit('chatMessage', msg); // Emitir el mensaje a todos los clientes conectados
+    try {
+      const { username, message, role, userId } = data;
+
+      if (!message || !message.trim()) return;
+
+      const msg = new Message({
+        username,
+        message,
+        role: role || 'Cliente',
+        userId: userId || 'desconocido'
+      });
+
+      await msg.save();
+
+      io.emit('chatMessage', {
+        username: msg.username,
+        message: msg.message,
+        role: msg.role,
+        userId: msg.userId,
+        createdAt: msg.createdAt
+      });
+
+    } catch (err) {
+      console.error('❌ Error guardando mensaje:', err);
+    }
   });
 
   socket.on('disconnect', () => {
@@ -62,5 +86,7 @@ io.on('connection', (socket) => {
   });
 });
 
-// Arrancar el servidor
-server.listen(PORT, () => console.log(`🚀 Servidor en http://localhost:${PORT}`));
+// Iniciar servidor
+server.listen(PORT, () => {
+  console.log(`🚀 Servidor en http://localhost:${PORT}`);
+});

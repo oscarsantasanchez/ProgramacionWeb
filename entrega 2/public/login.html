@@ -18,44 +18,51 @@
   </div>
 
   <script>
-  document.getElementById('loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
 
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (res.ok) {
-      // Guardar datos del usuario
-      sessionStorage.setItem('token', data.token);
-      sessionStorage.setItem('userRole', data.user.role);
-      sessionStorage.setItem('username', data.user.username);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      if (res.ok) {
+        // ================================
+        // GUARDAR DATOS DEL USUARIO
+        // ================================
+        sessionStorage.setItem('token', data.token);
+        sessionStorage.setItem('userRole', data.user.role);
+        sessionStorage.setItem('username', data.user.username);
+        sessionStorage.setItem('userId', data.user.id);   // 🔥 NECESARIO PARA EL CHAT
 
-      // 🔥 Recuperación del carrito por usuario
-      const savedCart = localStorage.getItem(`cart_${data.user.id}`);
+        // Guardar usuario completo en localStorage
+        localStorage.setItem('user', JSON.stringify(data.user));
 
-      if (savedCart) {
-        // Restaurar carrito previo
-        localStorage.setItem('cart', savedCart);
+        // ================================
+        // RECUPERACIÓN DEL CARRITO POR USUARIO
+        // ================================
+        const savedCart = localStorage.getItem(`cart_${data.user.id}`);
+
+        if (savedCart) {
+          localStorage.setItem('cart', savedCart);
+        } else {
+          localStorage.setItem('cart', JSON.stringify([]));
+        }
+
+        // Redirigir al panel principal
+        window.location.href = 'index.html';
+
       } else {
-        // Crear carrito vacío si no existía
-        localStorage.setItem('cart', JSON.stringify([]));
+        alert(data.message || 'Error al iniciar sesión');
       }
-
-      window.location.href = 'index.html';
-    } else {
-      alert(data.message || 'Error al iniciar sesión');
-    }
-  });
-</script>
+    });
+  </script>
 
 </body>
 </html>

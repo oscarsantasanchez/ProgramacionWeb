@@ -14,6 +14,7 @@
 
   <main class="chat-container">
     <div id="chatBox" class="chat-box"></div>
+
     <form id="chatForm" class="chat-form">
       <input type="text" id="messageInput" placeholder="Escribe un mensaje..." autocomplete="off" required />
       <button type="submit">Enviar</button>
@@ -23,37 +24,75 @@
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
+
+    // Datos del usuario desde sessionStorage
     const username = sessionStorage.getItem('username') || 'Anon';
+    const role = sessionStorage.getItem('role') || 'Cliente';
+    const userId = sessionStorage.getItem('userId') || 'desconocido';
+
     const chatBox = document.getElementById('chatBox');
     const chatForm = document.getElementById('chatForm');
     const messageInput = document.getElementById('messageInput');
+
     document.getElementById('backBtn').onclick = () => (window.location.href = 'index.html');
 
+    // ============================
+    // CARGAR HISTORIAL DEL CHAT
+    // ============================
     async function loadHistory() {
       const token = sessionStorage.getItem('token');
-      const res = await fetch('/api/chat/history', { headers: { Authorization: `Bearer ${token}` } });
+
+      const res = await fetch('/api/chat/history', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
       const history = await res.json();
-      history.forEach(m => appendMessage(m.username, m.message, m.username === username));
+
+      history.forEach(m => {
+        appendMessage(m.username, m.message, m.role, m.userId === userId);
+      });
     }
 
     loadHistory();
 
+    // ============================
+    // RECIBIR MENSAJES EN TIEMPO REAL
+    // ============================
     socket.on('chatMessage', (data) => {
-      appendMessage(data.username, data.message, data.username === username);
+      appendMessage(data.username, data.message, data.role, data.userId === userId);
     });
 
+    // ============================
+    // ENVIAR MENSAJE
+    // ============================
     chatForm.addEventListener('submit', (e) => {
       e.preventDefault();
+
       const msg = messageInput.value.trim();
       if (!msg) return;
-      socket.emit('chatMessage', { username, message: msg });
+
+      socket.emit('chatMessage', {
+        username,
+        role,
+        userId,
+        message: msg
+      });
+
       messageInput.value = '';
     });
 
-    function appendMessage(user, msg, isSelf = false) {
+    // ============================
+    // MOSTRAR MENSAJE EN PANTALLA
+    // ============================
+    function appendMessage(user, msg, role, isSelf = false) {
       const div = document.createElement('div');
       div.classList.add('chat-message', isSelf ? 'self' : 'user');
-      div.innerHTML = `<strong>${user}:</strong> ${msg}`;
+
+      div.innerHTML = `
+        <strong>${user} <span style="color: gray; font-size: 0.8em;">(${role})</span>:</strong>
+        ${msg}
+      `;
+
       chatBox.appendChild(div);
       chatBox.scrollTop = chatBox.scrollHeight;
     }
