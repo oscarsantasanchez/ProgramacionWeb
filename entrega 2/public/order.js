@@ -1,6 +1,7 @@
 import { createOrder } from './graphql/client.js';
 
-let cart = [];
+// Cargar carrito desde localStorage al iniciar
+let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
 export async function loadCart() {
   const cartSection = document.getElementById('cartSection');
@@ -30,6 +31,14 @@ export function addToCart(id, title, price) {
   } else {
     cart.push({ id, title, price, quantity: 1 });
   }
+
+  // Guardar carrito por usuario
+  const user = JSON.parse(localStorage.getItem('user'));
+  if (user) {
+    localStorage.setItem(`cart_${user.id}`, JSON.stringify(cart));
+    localStorage.setItem('cart', JSON.stringify(cart));
+  }
+
   loadCart();
 }
 
@@ -57,7 +66,11 @@ export async function placeOrder() {
     const order = await createOrder(userId, productIds, total);
     alert('Pedido realizado con éxito');
 
+    // Vaciar carrito en memoria y en localStorage
     cart = [];
+    localStorage.setItem(`cart_${user.id}`, JSON.stringify([]));
+    localStorage.setItem('cart', JSON.stringify([]));
+
     loadCart();
   } catch (error) {
     console.error(error);

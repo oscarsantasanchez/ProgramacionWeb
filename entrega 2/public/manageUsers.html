@@ -15,11 +15,48 @@
   </header>
 
   <main class="container">
-    <section id="userManagementSection">
-      <div id="userList"></div>
+
+    <!-- FORMULARIO PARA CREAR USUARIO -->
+    <section id="createUserSection" style="margin-bottom: 30px;">
+      <h2>Crear nuevo usuario</h2>
+      <form id="createUserForm">
+        <input type="text" id="newUsername" placeholder="Nombre de usuario" required>
+        <input type="email" id="newEmail" placeholder="Correo" required>
+        <input type="password" id="newPassword" placeholder="Contraseña" required>
+
+        <select id="newRole" required>
+          <option value="">Selecciona un rol</option>
+          <option value="Administrador">Administrador</option>
+          <option value="Logística">Logística</option>
+          <option value="Cliente">Cliente</option>
+        </select>
+
+        <button type="submit">Crear usuario</button>
+      </form>
     </section>
+
+    <!-- LISTA DE USUARIOS -->
+    <section id="userManagementSection">
+      <h2>Usuarios registrados</h2>
+
+      <table border="1" cellpadding="8" cellspacing="0" style="width: 100%; margin-top: 20px;">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Usuario</th>
+            <th>Email</th>
+            <th>Rol</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="usersTableBody">
+          <!-- Filas generadas por manageUsers.js -->
+        </tbody>
+      </table>
+    </section>
+
   </main>
 
-  <script src="manageUsers.js"></script>
+  <script type="module" src="manageUsers.js"></script>
 </body>
 </html>
