@@ -1,8 +1,8 @@
-import { createOrder } from './graphql/client.js';  // Asegúrate de que esta función esté correctamente importada
+import { createOrder } from './graphql/client.js';
+
 let cart = [];
 
 export async function loadCart() {
-  // Si el carrito está vacío, podemos ocultar la sección de pedidos
   const cartSection = document.getElementById('cartSection');
   const cartItems = document.getElementById('cartItems');
   
@@ -12,7 +12,7 @@ export async function loadCart() {
     cartSection.classList.remove('hidden');
   }
 
-  cartItems.innerHTML = ''; // Limpiar la lista de productos actuales en el carrito
+  cartItems.innerHTML = '';
 
   cart.forEach(item => {
     const itemDiv = document.createElement('div');
@@ -23,33 +23,44 @@ export async function loadCart() {
   });
 }
 
-// Función para añadir productos al carrito
 export function addToCart(id, title, price) {
   const existingItem = cart.find(item => item.id === id);
   if (existingItem) {
-    existingItem.quantity += 1;  // Si el producto ya está en el carrito, incrementamos la cantidad
+    existingItem.quantity += 1;
   } else {
     cart.push({ id, title, price, quantity: 1 });
   }
   loadCart();
 }
 
-// Función para realizar el pedido
 export async function placeOrder() {
   if (cart.length === 0) {
     alert('El carrito está vacío.');
     return;
   }
 
+  // Obtener usuario logueado
+  const user = JSON.parse(localStorage.getItem('user'));
+  if (!user || !user.id) {
+    alert('Debes iniciar sesión para realizar un pedido.');
+    return;
+  }
+
+  const userId = user.id;
+
   const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+
+  // El backend espera SOLO IDs de productos
   const productIds = cart.map(item => item.id);
 
   try {
-    const order = await createOrder(productIds, total);
+    const order = await createOrder(userId, productIds, total);
     alert('Pedido realizado con éxito');
-    cart = [];  // Vaciar el carrito después de realizar el pedido
+
+    cart = [];
     loadCart();
   } catch (error) {
+    console.error(error);
     alert('Hubo un problema al realizar el pedido. Intenta nuevamente.');
   }
 }
