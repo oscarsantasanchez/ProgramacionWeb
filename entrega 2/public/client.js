@@ -1,3 +1,17 @@
+import { useQuery, gql } from '@apollo/client';  // Importar Apollo Client
+
+// Definir la query de GraphQL para obtener productos
+const GET_PRODUCTS = gql`
+  query {
+    products {
+      id
+      title
+      description
+      price
+    }
+  }
+`;
+
 document.addEventListener('DOMContentLoaded', () => {
   const token = sessionStorage.getItem('token');
   const role = sessionStorage.getItem('userRole');
@@ -40,12 +54,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('manageProductsBtn').classList.remove('hidden');
     document.getElementById('manageUsersBtn').classList.remove('hidden');
     document.getElementById('manageOrdersBtn').classList.remove('hidden');
-    document.getElementById('createProductBtn').classList.remove('hidden');  // Mostrar el botón para crear productos
-    document.getElementById('viewOrdersBtn').classList.remove('hidden'); // Mostrar el botón para ver pedidos
+    document.getElementById('createProductBtn').classList.remove('hidden');
+    document.getElementById('viewOrdersBtn').classList.remove('hidden');
   } else if (role === 'Logística') {
     document.getElementById('manageProductsBtn').classList.remove('hidden');
     document.getElementById('manageOrdersBtn').classList.remove('hidden');
-    document.getElementById('createProductBtn').classList.remove('hidden');  // Mostrar el botón para crear productos
+    document.getElementById('createProductBtn').classList.remove('hidden');
   } else if (role === 'Cliente') {
     document.getElementById('viewCartBtn').classList.remove('hidden');
   }
@@ -66,6 +80,11 @@ document.getElementById('createProductBtn').addEventListener('click', () => {
 // Redirigir a la página de ver pedidos cuando se hace clic en el botón
 document.getElementById('viewOrdersBtn').addEventListener('click', () => {
   window.location.href = 'viewOrders.html';  // Redirigir a la página de ver pedidos
+});
+
+// Redirigir a la página de ver carrito cuando se hace clic en el botón
+document.getElementById('viewCartBtn').addEventListener('click', () => {
+  window.location.href = 'checkout.html';  // Redirigir a la página de checkout (carrito)
 });
 
 logoutBtn.addEventListener('click', () => {
