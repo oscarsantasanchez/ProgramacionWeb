@@ -1,12 +1,24 @@
-import { createOrder } from './graphql/client.js';
-
-// Cargar carrito desde localStorage al iniciar
+// =========================
+// VARIABLES
+// =========================
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-export async function loadCart() {
+const token = sessionStorage.getItem('token');
+const role = sessionStorage.getItem('userRole');
+const userId = sessionStorage.getItem('userId');
+
+// =========================
+// CARGAR CARRITO (solo Cliente)
+// =========================
+export function loadCart() {
   const cartSection = document.getElementById('cartSection');
   const cartItems = document.getElementById('cartItems');
-  
+
+  if (role !== 'Cliente') {
+    cartSection.classList.add('hidden');
+    return;
+  }
+
   if (cart.length === 0) {
     cartSection.classList.add('hidden');
   } else {
@@ -16,64 +28,166 @@ export async function loadCart() {
   cartItems.innerHTML = '';
 
   cart.forEach(item => {
-    const itemDiv = document.createElement('div');
-    itemDiv.innerHTML = `
-      <span>${item.title}</span> - $${item.price} x ${item.quantity}
-    `;
-    cartItems.appendChild(itemDiv);
+    const div = document.createElement('div');
+    div.innerHTML = `${item.title} - $${item.price} x ${item.quantity}`;
+    cartItems.appendChild(div);
   });
 }
 
-export function addToCart(id, title, price) {
-  const existingItem = cart.find(item => item.id === id);
-  if (existingItem) {
-    existingItem.quantity += 1;
-  } else {
-    cart.push({ id, title, price, quantity: 1 });
-  }
-
-  // Guardar carrito por usuario
-  const user = JSON.parse(localStorage.getItem('user'));
-  if (user) {
-    localStorage.setItem(`cart_${user.id}`, JSON.stringify(cart));
-    localStorage.setItem('cart', JSON.stringify(cart));
-  }
-
-  loadCart();
-}
-
+// =========================
+// REALIZAR PEDIDO (solo Cliente)
+// =========================
 export async function placeOrder() {
+  if (role !== 'Cliente') {
+    alert('Solo los clientes pueden realizar pedidos.');
+    return;
+  }
+
   if (cart.length === 0) {
     alert('El carrito está vacío.');
     return;
   }
 
-  // Obtener usuario logueado
-  const user = JSON.parse(localStorage.getItem('user'));
-  if (!user || !user.id) {
-    alert('Debes iniciar sesión para realizar un pedido.');
-    return;
-  }
-
-  const userId = user.id;
-
-  const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-
-  // El backend espera SOLO IDs de productos
-  const productIds = cart.map(item => item.id);
+  const products = cart.map(item => ({
+    productId: item.productId,
+    quantity: item.quantity
+  }));
 
   try {
-    const order = await createOrder(userId, productIds, total);
-    alert('Pedido realizado con éxito');
+    const res = await fetch('/api/orders', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ products })
+    });
 
-    // Vaciar carrito en memoria y en localStorage
-    cart = [];
-    localStorage.setItem(`cart_${user.id}`, JSON.stringify([]));
-    localStorage.setItem('cart', JSON.stringify([]));
+    const data = await res.json();
 
-    loadCart();
-  } catch (error) {
-    console.error(error);
-    alert('Hubo un problema al realizar el pedido. Intenta nuevamente.');
+    if (res.ok) {
+      alert('Pedido realizado con éxito');
+      cart = [];
+      localStorage.setItem('cart', JSON.stringify([]));
+      loadCart();
+      loadOrders();
+    } else {
+      alert(data.message);
+    }
+
+  } catch (err) {
+    console.error(err);
+    alert('Error al realizar el pedido.');
   }
 }
+
+// =========================
+// CARGAR PEDIDOS
+// =========================
+export async function loadOrders() {
+  const ordersList = document.getElementById('ordersList');
+  ordersList.innerHTML = '';
+
+  let url = '/api/orders';
+
+  // Cliente solo ve sus pedidos
+  if (role === 'Cliente') {
+    url = `/api/orders/user/${userId}`;
+  }
+
+  try {
+    const res = await fetch(url, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    const orders = await res.json();
+
+    if (orders.length === 0) {
+      ordersList.innerHTML = '<p>No hay pedidos.</p>';
+      return;
+    }
+
+    orders.forEach(order => {
+      const div = document.createElement('div');
+      div.classList.add('order-card');
+
+      div.innerHTML = `
+        <p><strong>Pedido #${order._id}</strong></p>
+        <p>Estado: ${order.status}</p>
+        <p>Total: $${order.total}</p>
+      `;
+
+      // Cambiar estado (Logística + Admin)
+      if (role === 'Logística' || role === 'Administrador') {
+        div.innerHTML += `
+          <select data-id="${order._id}" class="statusSelect">
+            <option value="Pendiente" ${order.status === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
+            <option value="Completado" ${order.status === 'Completado' ? 'selected' : ''}>Completado</option>
+          </select>
+        `;
+      }
+
+      // Eliminar (solo Admin)
+      if (role === 'Administrador') {
+        div.innerHTML += `
+          <button class="deleteBtn" data-id="${order._id}">Eliminar</button>
+        `;
+      }
+
+      ordersList.appendChild(div);
+    });
+
+    // EVENTO CAMBIAR ESTADO
+    document.querySelectorAll('.statusSelect').forEach(select => {
+      select.addEventListener('change', async e => {
+        const id = e.target.dataset.id;
+        const status = e.target.value;
+
+        await fetch(`/api/orders/${id}/status`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ status })
+        });
+
+        alert('Estado actualizado');
+      });
+    });
+
+    // EVENTO ELIMINAR
+    document.querySelectorAll('.deleteBtn').forEach(btn => {
+      btn.addEventListener('click', async e => {
+        const id = e.target.dataset.id;
+
+        if (!confirm('¿Eliminar pedido?')) return;
+
+        await fetch(`/api/orders/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        alert('Pedido eliminado');
+        loadOrders();
+      });
+    });
+
+  } catch (err) {
+    console.error(err);
+    ordersList.innerHTML = '<p>Error al cargar pedidos.</p>';
+  }
+}
+
+// =========================
+// INICIALIZACIÓN
+// =========================
+document.addEventListener('DOMContentLoaded', () => {
+  loadCart();
+  loadOrders();
+
+  const placeOrderBtn = document.getElementById('placeOrderBtn');
+  if (placeOrderBtn) {
+    placeOrderBtn.addEventListener('click', placeOrder);
+  }
+});

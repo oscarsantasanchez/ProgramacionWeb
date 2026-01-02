@@ -3,68 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mis Pedidos</title>
+  <title>Pedidos</title>
   <link rel="stylesheet" href="styles.css">
   <script src="order.js" type="module"></script>
 </head>
 <body>
   <header class="navbar">
-    <h1>🛒 Mis Pedidos</h1>
+    <h1>Gestión de Pedidos</h1>
+    <button onclick="window.location.href='index.html'">Volver</button>
     <button id="logoutBtn">Cerrar sesión</button>
   </header>
 
   <main class="container">
+
+    <!-- SOLO CLIENTE -->
     <section id="cartSection" class="hidden">
       <h2>Tu carrito</h2>
       <div id="cartItems"></div>
       <button id="placeOrderBtn">Realizar pedido</button>
     </section>
 
+    <!-- LISTA DE PEDIDOS -->
     <section id="ordersSection">
-      <h2>Pedidos realizados</h2>
+      <h2>Pedidos</h2>
       <div id="ordersList"></div>
     </section>
+
   </main>
-
-  <script>
-    // Cargar el carrito y los pedidos
-    document.addEventListener('DOMContentLoaded', () => {
-      // Cargar el carrito desde el localStorage
-      const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
-      cart = storedCart;
-
-      loadCart();
-
-      // Cargar los pedidos del usuario (si tienes la lógica de pedidos en REST o GraphQL)
-      // Aquí simplemente lo estamos dejando como un ejemplo básico.
-      fetchOrders();
-    });
-
-    // Mostrar los pedidos
-    async function fetchOrders() {
-      // Suponiendo que tienes una función para obtener los pedidos del usuario.
-      const ordersList = document.getElementById('ordersList');
-      // Aquí debes consultar los pedidos desde tu API GraphQL o REST, por ejemplo:
-      const orders = await getOrders();  // Asegúrate de tener la función para obtener pedidos
-
-      if (orders.length === 0) {
-        ordersList.innerHTML = '<p>No tienes pedidos realizados.</p>';
-      } else {
-        orders.forEach(order => {
-          const orderDiv = document.createElement('div');
-          orderDiv.classList.add('order-card');
-          orderDiv.innerHTML = `
-            <p>Pedido #${order.id}</p>
-            <p>Estado: ${order.status}</p>
-            <p>Total: $${order.total}</p>
-          `;
-          ordersList.appendChild(orderDiv);
-        });
-      }
-    }
-
-    // Función para realizar el pedido
-    document.getElementById('placeOrderBtn').addEventListener('click', placeOrder);
-  </script>
 </body>
 </html>

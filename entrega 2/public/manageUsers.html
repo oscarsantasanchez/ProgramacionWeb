@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestionar Usuarios</title>
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
   <header class="navbar">
     <h1>Gestión de Usuarios</h1>
@@ -50,8 +52,35 @@
           </tr>
         </thead>
         <tbody id="usersTableBody">
-          <!-- Filas generadas por manageUsers.js -->
+
+          <!-- Esta fila se mostrará temporalmente hasta que manageUsers.js cargue los usuarios -->
+          <tr id="loadingRow">
+            <td colspan="5" style="text-align: center; padding: 15px;">
+              Cargando usuarios...
+            </td>
+          </tr>
+
+          <!-- Las filas reales serán insertadas dinámicamente por manageUsers.js -->
+          <!-- Ejemplo de cómo se verán:
+  <tr>
+    <td>65f1a9c2b7e...</td>
+    <td>oscar_dev</td>
+    <td>oscar@example.com</td>
+    <td>
+      <select>
+        <option>Administrador</option>
+        <option>Logística</option>
+        <option>Cliente</option>
+      </select>
+    </td>
+    <td>
+      <button>Eliminar</button>
+    </td>
+  </tr>
+  -->
+
         </tbody>
+
       </table>
     </section>
 
@@ -59,4 +88,5 @@
 
   <script type="module" src="manageUsers.js"></script>
 </body>
+
 </html>

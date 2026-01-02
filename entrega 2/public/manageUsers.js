@@ -1,181 +1,132 @@
-import { client } from './graphql/client.js';
-import { gql } from '@apollo/client';
+document.addEventListener('DOMContentLoaded', async () => {
+  const token = sessionStorage.getItem('token');
+  const role = sessionStorage.getItem('userRole');
 
-// =========================
-// QUERIES Y MUTATIONS
-// =========================
-
-const GET_USERS = gql`
-  query GetUsers {
-    users {
-      id
-      username
-      email
-      role
-    }
+  // Solo Admin puede acceder
+  if (role !== 'Administrador') {
+    window.location.href = 'index.html';
+    return;
   }
-`;
 
-const CREATE_USER = gql`
-  mutation CreateUser($username: String!, $email: String!, $password: String!, $role: String!) {
-    createUser(username: $username, email: $email, password: $password, role: $role) {
-      id
-      username
-      email
-      role
-    }
-  }
-`;
-
-const UPDATE_USER_ROLE = gql`
-  mutation UpdateUserRole($id: ID!, $role: String!) {
-    updateUserRole(id: $id, role: $role) {
-      id
-      role
-    }
-  }
-`;
-
-const DELETE_USER = gql`
-  mutation DeleteUser($id: ID!) {
-    deleteUser(id: $id) {
-      id
-    }
-  }
-`;
-
-// =========================
-// CARGA INICIAL
-// =========================
-
-document.addEventListener('DOMContentLoaded', () => {
   loadUsers();
-
-  const createUserForm = document.getElementById('createUserForm');
-  createUserForm.addEventListener('submit', handleCreateUser);
 });
 
 // =========================
-// FUNCIONES PRINCIPALES
+// CARGAR USUARIOS
 // =========================
 
 async function loadUsers() {
+  const token = sessionStorage.getItem('token');
+  const tbody = document.getElementById('usersTableBody');
+
   try {
-    const { data } = await client.query({
-      query: GET_USERS,
-      fetchPolicy: 'no-cache'
+    const res = await fetch('/api/users', {
+      headers: { 'Authorization': `Bearer ${token}` }
     });
 
-    const users = data.users;
-    const tbody = document.getElementById('usersTableBody');
+    const users = await res.json();
     tbody.innerHTML = '';
 
     users.forEach(user => {
       const tr = document.createElement('tr');
 
       tr.innerHTML = `
-        <td>${user.id}</td>
+        <td>${user._id}</td>
         <td>${user.username}</td>
         <td>${user.email}</td>
         <td>
-          <select data-user-id="${user.id}" class="role-select">
+          <select data-id="${user._id}" class="role-select">
             <option value="Administrador" ${user.role === 'Administrador' ? 'selected' : ''}>Administrador</option>
             <option value="Logística" ${user.role === 'Logística' ? 'selected' : ''}>Logística</option>
             <option value="Cliente" ${user.role === 'Cliente' ? 'selected' : ''}>Cliente</option>
           </select>
         </td>
         <td>
-          <button data-delete-id="${user.id}" class="delete-btn">Eliminar</button>
+          <button class="delete-btn" data-id="${user._id}">Eliminar</button>
         </td>
       `;
 
       tbody.appendChild(tr);
     });
 
-    attachRoleChangeHandlers();
+    attachRoleHandlers();
     attachDeleteHandlers();
 
-  } catch (error) {
-    console.error(error);
-    alert('Error al cargar usuarios.');
-  }
-}
-
-async function handleCreateUser(e) {
-  e.preventDefault();
-
-  const username = document.getElementById('newUsername').value.trim();
-  const email = document.getElementById('newEmail').value.trim();
-  const password = document.getElementById('newPassword').value.trim();
-  const role = document.getElementById('newRole').value;
-
-  if (!username || !email || !password || !role) {
-    alert('Todos los campos son obligatorios.');
-    return;
-  }
-
-  try {
-    await client.mutate({
-      mutation: CREATE_USER,
-      variables: { username, email, password, role }
-    });
-
-    document.getElementById('createUserForm').reset();
-    await loadUsers();
-
-  } catch (error) {
-    console.error(error);
-    alert('Error al crear usuario.');
+  } catch (err) {
+    console.error('Error al cargar usuarios:', err);
+    alert('Error al cargar usuarios');
   }
 }
 
 // =========================
-// HANDLERS DE ROL Y ELIMINAR
+// CAMBIAR ROL
 // =========================
 
-function attachRoleChangeHandlers() {
+function attachRoleHandlers() {
   const selects = document.querySelectorAll('.role-select');
+  const token = sessionStorage.getItem('token');
 
   selects.forEach(select => {
-    select.addEventListener('change', async (e) => {
-      const userId = e.target.getAttribute('data-user-id');
+    select.addEventListener('change', async e => {
+      const id = e.target.dataset.id;
       const newRole = e.target.value;
 
       try {
-        await client.mutate({
-          mutation: UPDATE_USER_ROLE,
-          variables: { id: userId, role: newRole }
+        const res = await fetch(`/api/users/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ role: newRole })
         });
 
-      } catch (error) {
-        console.error(error);
-        alert('Error al actualizar el rol.');
+        const data = await res.json();
+
+        if (!res.ok) {
+          alert(data.message || 'Error al actualizar rol');
+        }
+
+      } catch (err) {
+        console.error('Error al actualizar rol:', err);
+        alert('Error al actualizar rol');
       }
     });
   });
 }
 
+// =========================
+// ELIMINAR USUARIO
+// =========================
+
 function attachDeleteHandlers() {
   const buttons = document.querySelectorAll('.delete-btn');
+  const token = sessionStorage.getItem('token');
 
   buttons.forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      const userId = e.target.getAttribute('data-delete-id');
+    btn.addEventListener('click', async e => {
+      const id = e.target.dataset.id;
 
-      const confirmDelete = window.confirm('¿Seguro que quieres eliminar este usuario?');
-      if (!confirmDelete) return;
+      if (!confirm('¿Seguro que deseas eliminar este usuario?')) return;
 
       try {
-        await client.mutate({
-          mutation: DELETE_USER,
-          variables: { id: userId }
+        const res = await fetch(`/api/users/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        await loadUsers();
+        const data = await res.json();
 
-      } catch (error) {
-        console.error(error);
-        alert('Error al eliminar usuario.');
+        if (res.ok) {
+          alert('Usuario eliminado');
+          loadUsers();
+        } else {
+          alert(data.message || 'Error al eliminar usuario');
+        }
+
+      } catch (err) {
+        console.error('Error al eliminar usuario:', err);
+        alert('Error al eliminar usuario');
       }
     });
   });

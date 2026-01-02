@@ -1,19 +1,22 @@
-/* ============================
-   🌐 VARIABLES Y ESTILOS GLOBALES MODERNOS
-============================ */
+/* ============================================================
+   🎨 VARIABLES GLOBALES – PALETA PREMIUM
+============================================================ */
 :root {
-  --primary-color: #FFD700;  /* Amarillo Neón */
-  --secondary-color: #333333; /* Fondo negro */
-  --text-color: #FFFFFF; /* Texto en blanco */
-  --border-color: #555555; /* Bordes suaves */
-  --hover-color: #FFCC00; /* Amarillo brillante en hover */
-  --font-primary: 'Arial', sans-serif;
-  --font-secondary: 'Roboto', sans-serif;
+  --primary-color: #f5c518;      /* Dorado elegante */
+  --primary-dark: #d4a60f;
+  --secondary-color: #1a1a1a;    /* Negro profundo */
+  --secondary-light: #2a2a2a;
+  --text-color: #e6e6e6;         /* Blanco suave */
+  --text-muted: #b5b5b5;
+  --border-color: #3a3a3a;
+  --danger-color: #ff4d4d;
+  --success-color: #4caf50;
+  --font-primary: 'Inter', sans-serif;
 }
 
-/* ============================
-   ESTILO GENERAL
-============================ */
+/* ============================================================
+   RESET Y BASE
+============================================================ */
 * {
   margin: 0;
   padding: 0;
@@ -22,28 +25,28 @@
 
 body {
   font-family: var(--font-primary);
-  color: var(--text-color);
   background-color: var(--secondary-color);
-  min-height: 100vh;
+  color: var(--text-color);
   line-height: 1.6;
+  min-height: 100vh;
 }
 
-/* ============================
-   NAVBAR PROFESIONAL
-============================ */
+/* ============================================================
+   NAVBAR – ESTILO CORPORATIVO
+============================================================ */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: var(--secondary-color);
-  color: var(--text-color);
+  background: var(--secondary-light);
   padding: 1rem 2rem;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .navbar h1 {
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--primary-color);
 }
 
 .navbar nav {
@@ -53,247 +56,217 @@ body {
 
 .navbar button {
   background: transparent;
-  color: var(--text-color);
   border: 1px solid var(--primary-color);
   padding: 0.6rem 1.2rem;
-  border-radius: 5px;
+  border-radius: 6px;
+  color: var(--primary-color);
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 500;
+  transition: 0.25s ease;
 }
 
 .navbar button:hover {
-  background-color: var(--primary-color);
+  background: var(--primary-color);
   color: var(--secondary-color);
-  transform: translateY(-2px);
 }
 
-/* ============================
-   SECCIÓN DE BIENVENIDA
-============================ */
-.welcome-box {
-  text-align: center;
-  margin: 4rem auto;
-  background-color: var(--secondary-color);
-  padding: 3rem;
-  border-radius: 10px;
-  max-width: 500px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--border-color);
-}
-
-.welcome-box h2 {
-  font-size: 2rem;
-  margin-bottom: 1rem;
-  font-weight: bold;
-}
-
-.welcome-box p {
-  color: var(--text-color);
-  font-size: 1.1rem;
-}
-
-/* ============================
-   SECCIÓN DE PRODUCTOS
-============================ */
+/* ============================================================
+   CONTENEDOR GENERAL
+============================================================ */
 .container {
-  max-width: 1200px;
+  max-width: 1300px;
   margin: 2rem auto;
   padding: 1rem;
 }
 
+/* ============================================================
+   TARJETAS – PRODUCTOS, USUARIOS, PEDIDOS
+============================================================ */
+.card {
+  background: var(--secondary-light);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 1.5rem;
+  transition: 0.3s ease;
+}
+
+.card:hover {
+  border-color: var(--primary-color);
+  transform: translateY(-3px);
+}
+
+/* ============================================================
+   GRID DE PRODUCTOS
+============================================================ */
 .product-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
+  gap: 1.8rem;
 }
 
 .product-card {
-  background: var(--secondary-color);
-  padding: 1.5rem;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  background: var(--secondary-light);
   border: 1px solid var(--border-color);
-  position: relative;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: 0.3s ease;
+}
+
+.product-card:hover {
+  border-color: var(--primary-color);
 }
 
 .product-card h3 {
-  font-size: 1.2rem;
   color: var(--primary-color);
+  font-size: 1.3rem;
   margin-bottom: 0.5rem;
-  font-weight: 600;
 }
 
 .product-card p {
-  color: var(--text-color);
+  color: var(--text-muted);
   margin-bottom: 1rem;
-  line-height: 1.5;
 }
 
 .product-card span {
   font-size: 1.4rem;
   font-weight: 700;
-  color: var(--text-color);
 }
 
-.admin-buttons {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.admin-buttons button {
-  flex: 1;
-  border: none;
-  border-radius: 5px;
-  padding: 0.8rem;
+/* ============================================================
+   BOTONES GENERALES
+============================================================ */
+button {
   cursor: pointer;
+  border-radius: 6px;
+  padding: 0.7rem 1.2rem;
   font-weight: 600;
-  background-color: var(--primary-color);
-  color: var(--secondary-color);
-  transition: all 0.3s ease;
+  border: none;
+  transition: 0.25s ease;
 }
 
-.admin-buttons button:hover {
-  background-color: var(--hover-color);
-}
-
-/* ============================
-   FORMULARIO DE ADMINISTRACIÓN
-============================ */
-.admin-form {
-  background: var(--secondary-color);
-  border-radius: 10px;
-  padding: 2rem;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--border-color);
-  margin-top: 2rem;
-}
-
-.admin-form h3 {
-  font-size: 1.5rem;
-  margin-bottom: 1.5rem;
-  font-weight: bold;
-  color: var(--primary-color);
-}
-
-.admin-form input,
-.admin-form textarea {
-  width: 100%;
-  padding: 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: 5px;
-  margin-bottom: 1rem;
-  font-size: 1rem;
-}
-
-.admin-form button {
+.btn-primary {
   background: var(--primary-color);
   color: var(--secondary-color);
-  border: none;
-  padding: 1rem 2rem;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
 }
 
-.admin-form button:hover {
-  background-color: var(--hover-color);
+.btn-primary:hover {
+  background: var(--primary-dark);
 }
 
-/* ============================
-   AUTENTICACIÓN
-============================ */
-.auth-body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background-color: var(--secondary-color);
+.btn-danger {
+  background: var(--danger-color);
+  color: #fff;
 }
 
-.auth-container {
-  background: var(--secondary-color);
-  padding: 3rem;
-  border-radius: 10px;
-  width: 100%;
-  max-width: 400px;
-  text-align: center;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--border-color);
+.btn-danger:hover {
+  background: #e60000;
 }
 
-.auth-container h2 {
-  margin-bottom: 2rem;
-  font-size: 2rem;
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--primary-color);
   color: var(--primary-color);
 }
 
-.auth-container form {
+.btn-outline:hover {
+  background: var(--primary-color);
+  color: var(--secondary-color);
+}
+
+/* ============================================================
+   FORMULARIOS – ESTILO PROFESIONAL
+============================================================ */
+form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.auth-container input {
-  padding: 1rem;
+input,
+textarea,
+select {
+  background: var(--secondary-light);
   border: 1px solid var(--border-color);
-  border-radius: 5px;
+  padding: 0.9rem;
+  border-radius: 6px;
+  color: var(--text-color);
   font-size: 1rem;
 }
 
-.auth-container button {
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+/* ============================================================
+   TABLAS – PANEL ADMINISTRATIVO
+============================================================ */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--secondary-light);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+thead {
   background: var(--primary-color);
   color: var(--secondary-color);
-  border: none;
+}
+
+thead th {
   padding: 1rem;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
+  text-align: left;
+  font-weight: 700;
 }
 
-.auth-container button:hover {
-  background-color: var(--hover-color);
+tbody tr {
+  border-bottom: 1px solid var(--border-color);
 }
 
-/* ============================
-   CHAT
-============================ */
+tbody tr:hover {
+  background: #2f2f2f;
+}
+
+tbody td {
+  padding: 1rem;
+  color: var(--text-color);
+}
+
+/* ============================================================
+   CHAT – ESTILO MODERNO
+============================================================ */
 .chat-container {
-  max-width: 800px;
-  margin: 2rem auto;
-  background-color: var(--secondary-color);
-  border-radius: 10px;
+  background: var(--secondary-light);
   padding: 2rem;
+  border-radius: 12px;
 }
 
 .chat-box {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1.5rem;
-  border: 1px solid var(--border-color);
+  background: #2d2d2d;
   border-radius: 10px;
-  background-color: #444;
-  color: var(--text-color);
-  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  height: 350px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
 }
 
 .chat-message {
-  margin-bottom: 1rem;
-  padding: 1rem;
-  border-radius: 5px;
   background: var(--primary-color);
   color: var(--secondary-color);
+  padding: 0.8rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  max-width: 70%;
 }
 
-/* ============================
-   BOTONES Y EFECTOS GENERALES
-============================ */
-button:focus {
-  outline: none;
-  border-color: var(--primary-color);
+/* ============================================================
+   UTILIDADES
+============================================================ */
+.text-center {
+  text-align: center;
 }
 
 .hidden {
