@@ -1,7 +1,7 @@
 const express = require('express');
 const Product = require('../models/Product');
 const authenticateJWT = require('../middleware/authenticateJWT');
-const authorizeRole = require('../middleware/authorizeRole');
+const authorizeRole = require('../middleware/authorizeRole');  // Middleware de autorización
 
 const router = express.Router();
 
@@ -16,8 +16,8 @@ router.get('/', authenticateJWT, async (req, res) => {
   }
 });
 
-// Crear un nuevo producto (requiere ser SuperAdmin)
-router.post('/', authenticateJWT, authorizeRole('Administrador'), async (req, res) => {
+// Crear un nuevo producto (requiere ser Admin o Logística)
+router.post('/', authenticateJWT, authorizeRole('Administrador', 'Logística'), async (req, res) => {
   try {
     const { title, description, price, image, imageType } = req.body;
 
@@ -49,8 +49,8 @@ router.post('/', authenticateJWT, authorizeRole('Administrador'), async (req, re
   }
 });
 
-// Actualizar un producto (requiere ser SuperAdmin)
-router.put('/:id', authenticateJWT, authorizeRole('Administrador'), async (req, res) => {
+// Actualizar un producto (requiere ser Admin o Logística)
+router.put('/:id', authenticateJWT, authorizeRole('Administrador', 'Logística'), async (req, res) => {
   try {
     const { title, description, price, image, imageType } = req.body;
 
@@ -77,8 +77,8 @@ router.put('/:id', authenticateJWT, authorizeRole('Administrador'), async (req, 
   }
 });
 
-// Eliminar un producto (requiere ser SuperAdmin)
-router.delete('/:id', authenticateJWT, authorizeRole('Administrador'), async (req, res) => {
+// Eliminar un producto (requiere ser Admin o Logística)
+router.delete('/:id', authenticateJWT, authorizeRole('Administrador', 'Logística'), async (req, res) => {
   try {
     const deletedProduct = await Product.findByIdAndDelete(req.params.id);
     if (!deletedProduct) return res.status(404).json({ message: 'Producto no encontrado' });

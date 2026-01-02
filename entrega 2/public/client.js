@@ -40,14 +40,21 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('manageProductsBtn').classList.remove('hidden');
     document.getElementById('manageUsersBtn').classList.remove('hidden');
     document.getElementById('manageOrdersBtn').classList.remove('hidden');
+    document.getElementById('createProductBtn').classList.remove('hidden');  // Mostrar el botón para crear productos
   } else if (role === 'Logística') {
     document.getElementById('manageProductsBtn').classList.remove('hidden');
     document.getElementById('manageOrdersBtn').classList.remove('hidden');
+    document.getElementById('createProductBtn').classList.remove('hidden');  // Mostrar el botón para crear productos
   } else if (role === 'Cliente') {
     document.getElementById('viewCartBtn').classList.remove('hidden');
   }
 
   loadProducts();
+});
+
+// Redirigir a la página de creación de productos cuando se hace clic en el botón
+document.getElementById('createProductBtn').addEventListener('click', () => {
+  window.location.href = 'createProduct.html';  // Redirigir a la página de crear producto
 });
 
 logoutBtn.addEventListener('click', () => {

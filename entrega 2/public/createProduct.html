@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crear Producto</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="navbar">
+    <h1>Crear Producto</h1>
+    <nav>
+      <button id="logoutBtn">Cerrar sesión</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section id="createProductSection">
+      <form id="createProductForm">
+        <label for="title">Título del producto:</label>
+        <input type="text" id="title" required>
+
+        <label for="description">Descripción:</label>
+        <textarea id="description"></textarea>
+
+        <label for="price">Precio:</label>
+        <input type="number" id="price" step="0.01" required>
+
+        <label for="image">Imagen (opcional, base64):</label>
+        <input type="text" id="image">
+
+        <button type="submit">Crear Producto</button>
+      </form>
+    </section>
+  </main>
+
+  <script src="createProduct.js"></script>
+</body>
+</html>
