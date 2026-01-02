@@ -3,21 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestionar Productos</title>
+  <title>Gestión de Productos</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="navbar">
     <h1>Gestión de Productos</h1>
     <nav>
+      <button onclick="window.location.href='index.html'">Volver</button>
       <button id="logoutBtn">Cerrar sesión</button>
     </nav>
   </header>
 
   <main class="container">
     <section id="productManagementSection">
-      <div id="productList"></div>
-      <button id="addProductBtn">Añadir Producto</button>
+      <h2>Productos</h2>
+
+      <div id="productList" class="product-grid"></div>
+
+      <button id="addProductBtn" class="primary-btn">Añadir Producto</button>
     </section>
   </main>
 
