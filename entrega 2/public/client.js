@@ -5,12 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Si el token no está presente, redirigir a la página de login
   if (!token) {
-    document.getElementById('loginBtn').addEventListener('click', () => {
-      window.location.href = 'login.html'; // Redirige al login
-    });
-    document.getElementById('registerBtn').addEventListener('click', () => {
-      window.location.href = 'register.html'; // Redirige al registro
-    });
+    window.location.href = 'login.html';
+    return;
   }
 
   // Verificar que el token no haya expirado
@@ -34,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('authSection').classList.add('hidden');
   document.getElementById('productSection').classList.remove('hidden');
   document.getElementById('logoutBtn').classList.remove('hidden');
-  document.getElementById('chatBtn').classList.remove('hidden');
   document.getElementById('loginBtn').classList.add('hidden');
   document.getElementById('registerBtn').classList.add('hidden');
   document.getElementById('userWelcome').classList.remove('hidden');
@@ -46,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('manageUsersBtn').classList.remove('hidden');
     document.getElementById('manageOrdersBtn').classList.remove('hidden');
   } else if (role === 'Logística') {
+    document.getElementById('manageProductsBtn').classList.remove('hidden');
     document.getElementById('manageOrdersBtn').classList.remove('hidden');
   } else if (role === 'Cliente') {
     document.getElementById('viewCartBtn').classList.remove('hidden');
@@ -59,9 +55,10 @@ logoutBtn.addEventListener('click', () => {
   window.location.href = 'login.html';  // Redirigir al login después de cerrar sesión
 });
 
+// Cargar los productos disponibles
 function loadProducts() {
   const token = sessionStorage.getItem('token');
-  const res = fetch('/api/products', {
+  fetch('/api/products', {
     headers: { 'Authorization': `Bearer ${token}` }
   }).then(response => response.json()).then(products => {
     const productList = document.getElementById('productList');
@@ -81,9 +78,20 @@ function loadProducts() {
   });
 }
 
+// Añadir productos al carrito
 function addToCart(product) {
   const cart = JSON.parse(localStorage.getItem('cart')) || [];
-  cart.push(product);
+  
+  // Verificar si el producto ya está en el carrito
+  const existingProduct = cart.find(item => item.productId === product._id);
+  if (existingProduct) {
+    existingProduct.quantity += 1; // Si ya está en el carrito, aumentar la cantidad
+  } else {
+    // Si no está en el carrito, añadirlo con cantidad 1
+    cart.push({ ...product, productId: product._id, quantity: 1 });
+  }
+
+  // Guardar el carrito actualizado en LocalStorage
   localStorage.setItem('cart', JSON.stringify(cart));
   alert('Producto añadido al carrito');
 }
