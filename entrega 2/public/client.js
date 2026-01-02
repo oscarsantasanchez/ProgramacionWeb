@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('manageUsersBtn').classList.remove('hidden');
     document.getElementById('manageOrdersBtn').classList.remove('hidden');
     document.getElementById('createProductBtn').classList.remove('hidden');  // Mostrar el botón para crear productos
+    document.getElementById('viewOrdersBtn').classList.remove('hidden'); // Mostrar el botón para ver pedidos
   } else if (role === 'Logística') {
     document.getElementById('manageProductsBtn').classList.remove('hidden');
     document.getElementById('manageOrdersBtn').classList.remove('hidden');
@@ -50,11 +51,21 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   loadProducts();
+
+  // Si es Administrador, cargar los pedidos
+  if (role === 'Administrador') {
+    loadOrders();
+  }
 });
 
 // Redirigir a la página de creación de productos cuando se hace clic en el botón
 document.getElementById('createProductBtn').addEventListener('click', () => {
   window.location.href = 'createProduct.html';  // Redirigir a la página de crear producto
+});
+
+// Redirigir a la página de ver pedidos cuando se hace clic en el botón
+document.getElementById('viewOrdersBtn').addEventListener('click', () => {
+  window.location.href = 'viewOrders.html';  // Redirigir a la página de ver pedidos
 });
 
 logoutBtn.addEventListener('click', () => {
@@ -85,20 +96,68 @@ function loadProducts() {
   });
 }
 
-// Añadir productos al carrito
-function addToCart(product) {
-  const cart = JSON.parse(localStorage.getItem('cart')) || [];
-  
-  // Verificar si el producto ya está en el carrito
-  const existingProduct = cart.find(item => item.productId === product._id);
-  if (existingProduct) {
-    existingProduct.quantity += 1; // Si ya está en el carrito, aumentar la cantidad
-  } else {
-    // Si no está en el carrito, añadirlo con cantidad 1
-    cart.push({ ...product, productId: product._id, quantity: 1 });
-  }
+// Cargar los pedidos disponibles para Administradores
+function loadOrders() {
+  const token = sessionStorage.getItem('token');
+  fetch('/api/orders', {
+    headers: { 'Authorization': `Bearer ${token}` }
+  }).then(response => response.json()).then(orders => {
+    const orderList = document.getElementById('orderList');
+    orders.forEach(order => {
+      const orderDiv = document.createElement('div');
+      orderDiv.classList.add('order-card');
+      orderDiv.innerHTML = `
+        <h3>Pedido #${order._id}</h3>
+        <p>Status: ${order.status}</p>
+        <p>Total: $${order.total}</p>
+        <button onclick="viewOrderDetails('${order._id}')">Ver Detalle</button>
+      `;
+      orderList.appendChild(orderDiv);
+    });
+  }).catch(error => {
+    console.error('Error al cargar pedidos:', error);
+  });
+}
 
-  // Guardar el carrito actualizado en LocalStorage
-  localStorage.setItem('cart', JSON.stringify(cart));
-  alert('Producto añadido al carrito');
+// Ver detalles de un pedido específico
+function viewOrderDetails(orderId) {
+  const token = sessionStorage.getItem('token');
+  fetch(`/api/orders/${orderId}`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  })
+  .then(response => response.json())
+  .then(order => {
+    // Aquí se cargan los detalles del pedido
+    const orderDetailsSection = document.getElementById('orderDetailsSection');
+    orderDetailsSection.innerHTML = `
+      <h3>Detalle del Pedido #${order._id}</h3>
+      <p>Status: ${order.status}</p>
+      <p>Total: $${order.total}</p>
+      <p>Fecha: ${new Date(order.createdAt).toLocaleDateString()}</p>
+      <h4>Productos:</h4>
+      <ul>
+        ${order.products.map(product => {
+          return `
+            <li>
+              <strong>${product.productId.title}</strong><br>
+              Descripción: ${product.productId.description}<br>
+              Precio: $${product.productId.price}<br>
+              Cantidad: ${product.quantity}<br>
+              <img src="${product.productId.image}" alt="${product.productId.title}" style="max-width: 100px;">
+            </li>
+          `;
+        }).join('')}
+      </ul>
+    `;
+    orderDetailsSection.classList.remove('hidden');
+  })
+  .catch(error => {
+    console.error('Error al cargar los detalles del pedido:', error);
+  });
+}
+
+// Cerrar el detalle del pedido
+function closeOrderDetails() {
+  const orderDetailsSection = document.getElementById('orderDetailsSection');
+  orderDetailsSection.classList.add('hidden');
 }

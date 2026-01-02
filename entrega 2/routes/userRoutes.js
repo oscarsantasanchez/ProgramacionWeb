@@ -1,14 +1,14 @@
 const express = require('express');
 const User = require('../models/User');
 const authenticateJWT = require('../middleware/authenticateJWT');
-const authorizeRole = require('../middleware/authorizeRole');
+const authorizeRole = require('../middleware/authorizeRole');  // Middleware para verificar roles
 
 const router = express.Router();
 
-// Obtener todos los usuarios (requiere ser SuperAdmin)
+// Obtener todos los usuarios (solo Admin puede acceder)
 router.get('/', authenticateJWT, authorizeRole('Administrador'), async (req, res) => {
   try {
-    const users = await User.find().select('-password'); // Excluir contraseñas
+    const users = await User.find().select('-password'); // Excluimos la contraseña en la respuesta
     res.json(users);
   } catch (err) {
     console.error('Error al obtener usuarios:', err);
@@ -16,7 +16,7 @@ router.get('/', authenticateJWT, authorizeRole('Administrador'), async (req, res
   }
 });
 
-// Crear un nuevo usuario (requiere ser SuperAdmin)
+// Crear un nuevo usuario (solo Admin puede acceder)
 router.post('/', authenticateJWT, authorizeRole('Administrador'), async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -41,19 +41,20 @@ router.post('/', authenticateJWT, authorizeRole('Administrador'), async (req, re
   }
 });
 
-// Actualizar un usuario (requiere ser SuperAdmin)
+// Actualizar un usuario (solo Admin puede acceder)
 router.put('/:id', authenticateJWT, authorizeRole('Administrador'), async (req, res) => {
   try {
     const { username, email, role } = req.body;
 
-    // Verificar si el rol intenta cambiar de 'Cliente' a otro rol
-    if (role && role !== 'Cliente') {
-      return res.status(400).json({ message: 'El rol no puede ser cambiado desde esta ruta. Solo se asigna "Cliente" por defecto.' });
+    // Validar el rol solo si es uno de los roles permitidos
+    if (role && !['Administrador', 'Logística', 'Cliente'].includes(role)) {
+      return res.status(400).json({ message: 'Rol inválido. Solo se permite "Administrador", "Logística" o "Cliente".' });
     }
 
     const updateData = {};
     if (username) updateData.username = username;
     if (email) updateData.email = email;
+    if (role) updateData.role = role;
 
     const updatedUser = await User.findByIdAndUpdate(req.params.id, updateData, { new: true });
     if (!updatedUser) return res.status(404).json({ message: 'Usuario no encontrado' });
@@ -65,11 +66,18 @@ router.put('/:id', authenticateJWT, authorizeRole('Administrador'), async (req, 
   }
 });
 
-// Eliminar un usuario (requiere ser SuperAdmin)
+// Eliminar un usuario (solo Admin puede acceder)
 router.delete('/:id', authenticateJWT, authorizeRole('Administrador'), async (req, res) => {
   try {
+    // No permitir eliminar el usuario que está realizando la solicitud (preventivo)
+    if (req.user.id === req.params.id) {
+      return res.status(403).json({ message: 'No puedes eliminar tu propio usuario.' });
+    }
+
     const deletedUser = await User.findByIdAndDelete(req.params.id);
-    if (!deletedUser) return res.status(404).json({ message: 'Usuario no encontrado' });
+    if (!deletedUser) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
     res.json({ message: 'Usuario eliminado correctamente' });
   } catch (err) {
     console.error('Error al eliminar usuario:', err);

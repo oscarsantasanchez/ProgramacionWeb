@@ -10,6 +10,7 @@ const { PORT, MONGO_URI } = require('./config');
 const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
 const chatRoutes = require('./routes/chatRoutes');
+const userRoutes = require('./routes/userRoutes');  // Importa las rutas de usuarios
 
 // Importar el esquema GraphQL
 const schema = require('./graphql/schema');
@@ -31,10 +32,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// Rutas REST (Autenticación, Productos y Chat)
+// Rutas REST (Autenticación, Productos, Chat y Usuarios)
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes); // authenticateJWT ya aplicado dentro de productRoutes
 app.use('/api/chat', chatRoutes); // authenticateJWT ya aplicado dentro de chatRoutes
+app.use('/api/users', userRoutes); // Ruta para la gestión de usuarios
 
 // Rutas GraphQL
 app.use('/graphql', graphqlHTTP({
