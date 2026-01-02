@@ -1,11 +1,11 @@
 import { ApolloClient, InMemoryCache, gql } from '@apollo/client';
 
 const client = new ApolloClient({
-  uri: 'http://localhost:3000/graphql',  // Asegúrate de que este es el URI correcto de tu servidor GraphQL
+  uri: 'http://localhost:3000/graphql',
   cache: new InMemoryCache()
 });
 
-// Función para cargar productos desde GraphQL
+// Obtener productos desde GraphQL
 export async function getProducts() {
   const { data } = await client.query({
     query: gql`
@@ -15,6 +15,8 @@ export async function getProducts() {
           title
           description
           price
+          image
+          stock
         }
       }
     `
@@ -22,27 +24,26 @@ export async function getProducts() {
   return data.products;
 }
 
-// Función para crear un pedido
-export async function createOrder(products, total) {
+// Crear pedido usando la mutation addOrder del backend
+export async function createOrder(userId, products, total) {
   const { data } = await client.mutate({
     mutation: gql`
-      mutation CreateOrder($products: [ID!]!, $total: Float!) {
-        createOrder(products: $products, total: $total, status: "pending") {
+      mutation AddOrder($userId: ID!, $products: [String!]!, $total: Float!) {
+        addOrder(userId: $userId, products: $products, total: $total, status: "Pendiente") {
           id
-          userId
-          products {
-            productId
-            quantity
-          }
-          total
+          user
           status
+          total
+          createdAt
         }
       }
     `,
     variables: {
-      products,
+      userId,
+      products, // lista de IDs de productos
       total
     }
   });
-  return data.createOrder;
+
+  return data.addOrder;
 }
