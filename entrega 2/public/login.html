@@ -33,36 +33,35 @@
       const data = await res.json();
 
       if (res.ok) {
-        // ================================
-        // GUARDAR DATOS DEL USUARIO
-        // ================================
+        // Guardar datos del usuario
         sessionStorage.setItem('token', data.token);
         sessionStorage.setItem('userRole', data.user.role);
         sessionStorage.setItem('username', data.user.username);
-        sessionStorage.setItem('userId', data.user.id);   // 🔥 NECESARIO PARA EL CHAT
-
-        // Guardar usuario completo en localStorage
+        sessionStorage.setItem('userId', data.user.id);
         localStorage.setItem('user', JSON.stringify(data.user));
 
-        // ================================
-        // RECUPERACIÓN DEL CARRITO POR USUARIO
-        // ================================
+        // Recuperación del carrito
         const savedCart = localStorage.getItem(`cart_${data.user.id}`);
+        if (savedCart) localStorage.setItem('cart', savedCart);
+        else localStorage.setItem('cart', JSON.stringify([]));
 
-        if (savedCart) {
-          localStorage.setItem('cart', savedCart);
-        } else {
-          localStorage.setItem('cart', JSON.stringify([]));
+        // 🔹 Redirección según rol
+        switch(data.user.role) {
+          case 'Administrador':
+            window.location.href = 'manageProducts.html';
+            break;
+          case 'Logística':
+            window.location.href = 'manageOrders.html';
+            break;
+          case 'Cliente':
+          default:
+            window.location.href = 'index.html';
         }
-
-        // Redirigir al panel principal
-        window.location.href = 'index.html';
 
       } else {
         alert(data.message || 'Error al iniciar sesión');
       }
     });
   </script>
-
 </body>
 </html>
