@@ -1,214 +1,289 @@
-# E-COMMERCE Y GESTIÓN DE PEDIDOS - Entrega 2
+# Proyecto E-Commerce con GraphQL y Roles
 
-Este proyecto se basa en un portal de productos desarrollado con Node.js, Express, MongoDB y Socket.IO. Incluye autenticación JWT, chat en tiempo real y gestión de productos desarrollado para la entrega 1 y se le debe añadir E-COMMERCE con Graphql y gestión de pedidos.
+Proyecto de aplicación web tipo **E-Commerce** desarrollado con **Node.js, Express, MongoDB y GraphQL**, que incluye autenticación JWT, gestión de usuarios con roles, carrito de compra, pedidos y un chat común entre usuarios conectados.
 
-## 🚀 Características
+---
 
-- Autenticación de usuarios con JWT
-- CRUD de productos
-- Chat en tiempo real
-- Roles de usuario (admin/usuario)
-- API RESTful
-- Persistencia en MongoDB
+## 📌 Tecnologías utilizadas
 
-## 📋 Requisitos Previos
+### Backend
+- **Node.js**
+- **Express**
+- **MongoDB + Mongoose**
+- **GraphQL (Apollo Server)**
+- **JWT (JSON Web Token)** para autenticación
+- **Socket.IO** para chat en tiempo real
 
-- Node.js >= 12
-- MongoDB
-- npm o yarn
+### Frontend
+- **HTML5**
+- **CSS3**
+- **JavaScript Vanilla**
+- **Apollo Client** para consumo de GraphQL
+- **Fetch API** para endpoints REST
 
-## 🛠️ Instalación
+---
 
-1. Clonar el repositorio:
-```bash
-git clone https://github.com/oscarsantasanchez/ProgramacionWeb.git
-cd entrega1
-```
-
-2. Instalar dependencias:
-```bash
-npm install
-```
-3. Iniciar el servidor:
-```bash
-npm start
-```
-
-Para desarrollo:
-```bash
-npm run dev
-```
-
-## 🗄️ Estructura del Proyecto
+## 📂 Estructura del proyecto
 
 ```
-entrega1/
-├── config.js           # Configuración del proyecto
-├── server.js          # Punto de entrada principal
-├── middleware/        # Middlewares personalizados
-│   ├── authenticateJWT.js
-│   └── authorizeRole.js
-├── models/           # Modelos de MongoDB
-│   ├── Message.js
-│   ├── Product.js
-│   └── User.js
-├── public/          # Archivos estáticos
-│   ├── chat.html
-│   ├── client.js
-│   ├── index.html
-│   ├── login.html
-│   ├── register.html
-│   └── styles.css
-└── routes/         # Rutas de la API
-    ├── authRoutes.js
-    ├── chatRoutes.js
-    └── productRoutes.js
+entrega-2/
+│
+├── public/
+│ ├── index.html
+│ ├── login.html
+│ ├── register.html
+│ ├── checkout.html
+│ ├── order.html
+│ ├── manageProducts.html
+│ ├── manageUsers.html
+│ ├── manageOrders.html
+│ ├── editProduct.html
+│ │
+│ ├── styles.css
+│ │
+│ ├── client.js # Lógica principal + GraphQL Products
+│ ├── order.js # Gestión de pedidos
+│ ├── manageProducts.js
+│ ├── manageUsers.js
+│ ├── manageOrders.js
+│ └── checkout.js
+│
+├── graphql/
+│ ├── schema.js
+│ └── resolvers.js
+│
+├── models/
+│ ├── User.js
+│ ├── Product.js
+│ └── Order.js
+│
+├── routes/
+│ ├── auth.routes.js
+│ ├── products.routes.js
+│ ├── orders.routes.js
+│ └── users.routes.js
+│
+├── middleware/
+│ ├── authMiddleware.js
+│ └── roleMiddleware.js
+│
+├── server.js
+└── README.md
 ```
 
-## 📚 API Endpoints
 
-### Autenticación
-- `POST /api/auth/register` - Registro de usuario
-- `POST /api/auth/login` - Inicio de sesión
+---
 
-### Productos
-- `GET /api/products` - Obtener todos los productos
-- `POST /api/products` - Crear nuevo producto (requiere auth)
-- `PUT /api/products/:id` - Actualizar producto (requiere auth)
-- `DELETE /api/products/:id` - Eliminar producto (requiere auth)
+## 👤 Roles y funcionalidades
 
-### Chat
-- `GET /api/chat/messages` - Obtener historial de mensajes
-- `POST /api/chat/messages` - Enviar nuevo mensaje (requiere auth)
+### 🧑 Cliente
+- Ver todos los productos
+- Añadir productos al carrito
+- Persistencia del carrito (LocalStorage + recuperación tras login)
+- Realizar pedidos
+- Ver sus propios pedidos
+- Participar en el chat común
 
-## 🔌 WebSocket Events
+---
 
-### Cliente a Servidor
-- `chatMessage` - Enviar mensaje de chat
-```javascript
-socket.emit('chatMessage', { username: 'user', message: 'Hello!' });
-```
+### 🚚 Logística
+- Ver todos los productos
+- Crear y editar productos
+- Ver pedidos de todos los usuarios
+- Cambiar el estado de los pedidos
+- Acceso al chat común
 
-### Servidor a Cliente
-- `chatMessage` - Recibir mensaje de chat
-```javascript
-socket.on('chatMessage', (msg) => {
-  console.log(msg.username + ': ' + msg.message);
-});
-```
+---
 
-## 🔒 Seguridad
+### 👑 Administrador
+- Todas las funciones de Logística
+- Gestión completa de usuarios:
+  - Listar usuarios
+  - Cambiar roles
+  - Eliminar usuarios
+- Eliminar pedidos
+- Acceso al chat común
 
-- Autenticación mediante JWT (JSON Web Tokens)
-- Contraseñas hasheadas con bcrypt
-- Middleware de autorización por roles
-- CORS habilitado
-- Validación de datos en endpoints
+---
 
-## 🛡️ Middleware de Autenticación
+## 🛍️ Flujo de uso de la aplicación
 
-El proyecto utiliza middleware personalizado para proteger rutas:
+1. Usuario se registra o inicia sesión
+2. Se valida el token JWT
+3. Se redirige al panel según el rol
+4. Cliente:
+   - Añade productos al carrito
+   - Finaliza compra → se crea una Order
+5. Logística / Admin:
+   - Visualizan pedidos
+   - Cambian estado
+6. Todos los usuarios:
+   - Acceden al chat común
 
-```javascript
-// Ejemplo de ruta protegida
-app.use('/api/products', authenticateJWT, productRoutes);
-```
+---
 
-## 💾 Modelos de Datos
+## 🔐 Autenticación
 
-### Usuario
-```javascript
+La autenticación se realiza mediante **JWT** usando endpoints REST:
+
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+
+El token se guarda en `sessionStorage` y se valida en cada vista.
+
+---
+
+## 📦 Modelos de datos (MongoDB)
+
+### User
+```js
 {
   username: String,
-  password: String, // Hasheado
-  role: String     // 'admin' o 'user'
+  email: String,
+  password: String,
+  role: "Administrador" | "Logística" | "Cliente"
 }
 ```
 
-### Producto
-```javascript
+### Product
+```
 {
-  name: String,
+  title: String,
   description: String,
   price: Number,
-  createdBy: ObjectId
+  image: String
 }
 ```
-
-### Mensaje
-```javascript
+### Order
+```
 {
-  username: String,
-  message: String,
-  timestamp: Date
+  userId: ObjectId,
+  products: [
+    {
+      product: ObjectId,
+      quantity: Number
+    }
+  ],
+  total: Number,
+  status: "Pendiente" | "Completado",
+  createdAt: Date
+}
+
+```
+---
+
+## GraphQL
+### Tipos principales
+```
+type Product {
+  id: ID!
+  title: String!
+  description: String!
+  price: Float!
+  image: String
+}
+
+type OrderProduct {
+  product: Product!
+  quantity: Int!
+}
+
+type Order {
+  id: ID!
+  userId: ID!
+  products: [OrderProduct!]!
+  total: Float!
+  status: String!
+  createdAt: String!
 }
 ```
 
-## 🔧 Configuración
+## Queries
+### Obtener productos
+```
+query GetProducts {
+  products {
+    id
+    title
+    description
+    price
+    image
+  }
+}
 
-El archivo `config.js` maneja la configuración del proyecto:
-
-```javascript
-{
-  PORT: process.env.PORT || 3000,
-  MONGO_URI: process.env.MONGO_URI || 'mongodb://localhost:27017/portalproductos',
-  JWT_SECRET: process.env.JWT_SECRET || 'clave_secreta_por_defecto',
-  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '8h'
+```
+### Obtener todos los pedidos
+```
+query GetOrders {
+  orders {
+    id
+    userId
+    total
+    status
+    createdAt
+  }
 }
 ```
+### Obtener detalle de un pedido
+```
+query GetOrder($id: ID!) {
+  order(id: $id) {
+    id
+    status
+    total
+    createdAt
+    products {
+      quantity
+      product {
+        title
+        price
+      }
+    }
+  }
+}
+```
+## Mutations
+### Crear producto
+```
+mutation CreateProduct($title: String!, $description: String!, $price: Float!) {
+  createProduct(
+    title: $title,
+    description: $description,
+    price: $price
+  ) {
+    id
+    title
+  }
+}
+```
+### Actualizar producto
+```
+mutation UpdateProduct($id: ID!, $price: Float) {
+  updateProduct(id: $id, price: $price) {
+    id
+    price
+  }
+}
+```
+### Eliminar producto
+```
+mutation DeleteProduct($id: ID!) {
+  deleteProduct(id: $id)
+}
+```
+### Actualizar estado de pedido
+```
+mutation UpdateOrderStatus($id: ID!, $status: String!) {
+  updateOrderStatus(id: $id, status: $status) {
+    id
+    status
+  }
+}
+```
+---
 
-## 📦 Dependencias Principales
+## Chat en tiempo real
 
-- express: Framework web
-- mongoose: ODM para MongoDB
-- socket.io: Comunicación en tiempo real
-- jsonwebtoken: Autenticación JWT
-- bcrypt: Hashing de contraseñas
-- cors: Middleware CORS
-
-## 🤔 Decisiones tomadas durante el desarrollo
-
-### 1. Arquitectura y Estructura
-- **Patrón MVC**: Se implementó una arquitectura Modelo-Vista-Controlador para mantener una separación clara de responsabilidades.
-- **Estructura modular**: Se organizó el código en directorios específicos (routes, models, middleware) para mejorar la mantenibilidad.
-- **API RESTful**: Se eligió un diseño REST para la API por su simplicidad y amplia adopción en la industria.
-
-### 2. Tecnologías Seleccionadas
-- **MongoDB**: Elegido por su flexibilidad con datos JSON y excelente integración con Node.js.
-- **Express**: Framework seleccionado por su madurez, documentación y gran ecosistema de middleware.
-- **Socket.IO**: Implementado para el chat en tiempo real por su robustez y facilidad de uso.
-- **JWT**: Elegido para autenticación por ser stateless y escalable.
-
-### 3. Decisiones de Seguridad
-- **Hashing de Contraseñas**: Se utiliza bcrypt con salt rounds configurables para máxima seguridad.
-- **CORS Configurado**: Habilitado para permitir peticiones desde el frontend en desarrollo.
-- **Middleware de Autenticación**: Implementado a nivel de ruta para proteger endpoints sensibles.
-- **Validación de Datos**: Implementada en cada endpoint para prevenir inyecciones y datos malformados.
-
-### 4. Optimizaciones
-- **Conexión MongoDB Persistente**: Uso de conexión persistente para mejor rendimiento.
-- **Índices en MongoDB**: Creados en campos frecuentemente consultados.
-- **Paginación**: Implementada en endpoints que devuelven listas para optimizar rendimiento.
-
-### 5. Decisiones de Frontend
-- **Archivos Estáticos**: Servidos directamente por Express para simplificar el despliegue.
-- **JavaScript Vanilla**: Usado en el cliente para minimizar dependencias.
-- **Diseño Responsive**: CSS implementado con flexbox y grid para adaptabilidad.
-
-### 6. Gestión de Errores
-- **Middleware de Errores**: Centralizado para manejo consistente de errores.
-- **Logging**: Implementado para facilitar debugging y monitoreo.
-- **Validación de Entrada**: Middleware personalizado para validar datos de entrada.
-
-### 7. Escalabilidad
-- **Configuración Externalizada**: Variables de entorno para facilitar el despliegue.
-- **Estructura Modular**: Diseño que permite agregar nuevas características fácilmente.
-- **Websockets Optimizados**: Implementación eficiente para manejar múltiples conexiones.
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
-
-## ✍️ Autor
-
-Oscar Santamaria Sánchez
+- Implementado con Socket.IO
+- Todos los usuarios con sesión activa pueden comunicarse
+- Identificación por username
