@@ -10,7 +10,7 @@
   <header class="navbar">
     <h1>Gestión de Productos</h1>
     <nav>
-      <button onclick="window.location.href='index.html'">Volver</button>
+      <button id="homeBtn">Inicio</button>
       <button id="logoutBtn">Cerrar sesión</button>
     </nav>
   </header>
@@ -18,13 +18,12 @@
   <main class="container">
     <section id="productManagementSection">
       <h2>Productos</h2>
-
       <div id="productList" class="product-grid"></div>
-
       <button id="addProductBtn" class="primary-btn">Añadir Producto</button>
     </section>
   </main>
 
   <script src="manageProducts.js"></script>
+  <script src="client.js"></script> <!-- Para manejar home y logout -->
 </body>
 </html>

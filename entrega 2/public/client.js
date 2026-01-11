@@ -1,103 +1,69 @@
-import { useQuery, gql } from '@apollo/client';  // Importar Apollo Client
-
-// Definir la query de GraphQL para obtener productos
-const GET_PRODUCTS = gql`
-  query {
-    products {
-      id
-      title
-      description
-      price
-      image
-    }
-  }
-`;
-
 document.addEventListener('DOMContentLoaded', () => {
   const token = sessionStorage.getItem('token');
   const role = sessionStorage.getItem('userRole');
   const username = sessionStorage.getItem('username');
 
-  // Redirigir al login si no hay token
+  // ===============================
+  // CONTROL DE SESIÓN
+  // ===============================
   if (!token) {
     window.location.href = 'login.html';
     return;
   }
 
-  // Verificar expiración del token
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));
-    const isExpired = payload.exp * 1000 < Date.now();
-    if (isExpired) {
+    if (payload.exp * 1000 < Date.now()) {
       sessionStorage.clear();
       window.location.href = 'login.html';
       return;
     }
-  } catch (e) {
-    console.error('❌ Error verificando token:', e);
+  } catch (err) {
+    console.error('Token inválido', err);
     sessionStorage.clear();
     window.location.href = 'login.html';
     return;
   }
 
   // ===============================
-  // Mostrar interfaz según rol
+  // UI GENERAL
   // ===============================
-  document.getElementById('authSection').classList.add('hidden');
-  document.getElementById('productSection').classList.remove('hidden');
-  document.getElementById('logoutBtn').classList.remove('hidden');
-  document.getElementById('loginBtn').classList.add('hidden');
-  document.getElementById('registerBtn').classList.add('hidden');
-  document.getElementById('userWelcome').classList.remove('hidden');
-  document.getElementById('usernameDisplay').textContent = username;
+  showIfExists('userWelcome');
+  showIfExists('logoutBtn');
+  hideIfExists('loginBtn');
+  hideIfExists('registerBtn');
+  hideIfExists('authSection');
+  showIfExists('productSection');
 
-  // Botones según rol
-  if (role === 'Administrador') {
-    document.getElementById('manageProductsBtn').classList.remove('hidden');
-    document.getElementById('manageUsersBtn').classList.remove('hidden');
-    document.getElementById('manageOrdersBtn').classList.remove('hidden');
-    document.getElementById('createProductBtn').classList.remove('hidden');
-    document.getElementById('viewOrdersBtn').classList.remove('hidden');
-
-    document.getElementById('manageProductsBtn').addEventListener('click', () => window.location.href = 'manageProducts.html');
-    document.getElementById('manageUsersBtn').addEventListener('click', () => window.location.href = 'manageUsers.html');
-    document.getElementById('manageOrdersBtn').addEventListener('click', () => window.location.href = 'manageOrders.html');
-    document.getElementById('createProductBtn').addEventListener('click', () => window.location.href = 'createProduct.html');
-    document.getElementById('viewOrdersBtn').addEventListener('click', () => window.location.href = 'order.html');
-  } else if (role === 'Logística') {
-    document.getElementById('manageProductsBtn').classList.remove('hidden');
-    document.getElementById('manageOrdersBtn').classList.remove('hidden');
-    document.getElementById('createProductBtn').classList.remove('hidden');
-
-    document.getElementById('manageProductsBtn').addEventListener('click', () => window.location.href = 'manageProducts.html');
-    document.getElementById('manageOrdersBtn').addEventListener('click', () => window.location.href = 'manageOrders.html');
-    document.getElementById('createProductBtn').addEventListener('click', () => window.location.href = 'createProduct.html');
-  } else if (role === 'Cliente') {
-    document.getElementById('viewCartBtn').classList.remove('hidden');
-    document.getElementById('viewCartBtn').addEventListener('click', () => window.location.href = 'order.html');
+  if (document.getElementById('usernameDisplay')) {
+    document.getElementById('usernameDisplay').textContent = username;
   }
 
-  // Logout
-  document.getElementById('logoutBtn').addEventListener('click', () => {
-    sessionStorage.clear();
-    localStorage.removeItem('cart');
-    window.location.href = 'login.html';
-  });
-
-  loadProducts();
-
-  // Solo Admin puede cargar los pedidos
+  // ===============================
+  // BOTONES SEGÚN ROL
+  // ===============================
   if (role === 'Administrador') {
+    showAndBind('manageProductsBtn', 'manageProducts.html');
+    showAndBind('manageUsersBtn', 'manageUsers.html');
+    showAndBind('manageOrdersBtn', 'manageOrders.html');
+    showAndBind('createProductBtn', 'createProduct.html');
+    showAndBind('viewOrdersBtn', 'order.html');
     loadOrders();
+  } else if (role === 'Logística') {
+    showAndBind('manageProductsBtn', 'manageProducts.html');
+    showAndBind('manageOrdersBtn', 'manageOrders.html');
+    showAndBind('createProductBtn', 'createProduct.html');
+  } else if (role === 'Cliente') {
+    showAndBind('viewCartBtn', 'order.html');
   }
 
   // ===============================
-  // Botón "Inicio" para volver al panel principal
+  // BOTÓN INICIO (volver al panel del rol)
   // ===============================
   const homeBtn = document.getElementById('homeBtn');
   if (homeBtn) {
     homeBtn.addEventListener('click', () => {
-      switch(role) {
+      switch (role) {
         case 'Administrador':
           window.location.href = 'manageProducts.html';
           break;
@@ -110,91 +76,123 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // ===============================
+  // LOGOUT
+  // ===============================
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      sessionStorage.clear();
+      localStorage.removeItem('cart');
+      window.location.href = 'login.html';
+    });
+  }
+
+  // ===============================
+  // CARGAR PRODUCTOS
+  // ===============================
+  loadProducts();
 });
 
 // ===============================
-// FUNCIONES DE PRODUCTOS
+// FUNCIONES UI
+// ===============================
+function showIfExists(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('hidden');
+}
+
+function hideIfExists(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.add('hidden');
+}
+
+function showAndBind(id, url) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('hidden');
+  el.onclick = () => window.location.href = url;
+}
+
+// ===============================
+// PRODUCTOS
 // ===============================
 function loadProducts() {
   const token = sessionStorage.getItem('token');
+  const productList = document.getElementById('productList');
+  if (!productList) return;
+
   fetch('/api/products', {
-    headers: { 'Authorization': `Bearer ${token}` }
-  }).then(response => response.json())
+    headers: { Authorization: `Bearer ${token}` }
+  })
+    .then(res => res.json())
     .then(products => {
-      const productList = document.getElementById('productList');
       productList.innerHTML = '';
       products.forEach(product => {
-        const productDiv = document.createElement('div');
-        productDiv.classList.add('product-card');
-        productDiv.innerHTML = `
+        const div = document.createElement('div');
+        div.className = 'product-card';
+        div.innerHTML = `
           <h3>${product.title}</h3>
           <p>${product.description}</p>
-          <span>$${product.price}</span>
-          <button onclick="addToCart(${JSON.stringify(product)})">Añadir al carrito</button>
+          <p><strong>${product.price} €</strong></p>
+          <button class="addCartBtn">Añadir al carrito</button>
         `;
-        productList.appendChild(productDiv);
+        productList.appendChild(div);
+
+        // Añadir funcionalidad de carrito
+        div.querySelector('.addCartBtn').addEventListener('click', () => {
+          addToCart(product);
+        });
       });
-    }).catch(error => console.error('Error al cargar productos:', error));
+    })
+    .catch(err => console.error('Error cargando productos', err));
 }
 
 // ===============================
-// FUNCIONES DE PEDIDOS (solo Admin)
+// PEDIDOS (ADMIN)
 // ===============================
 function loadOrders() {
   const token = sessionStorage.getItem('token');
+  const orderList = document.getElementById('orderList');
+  if (!orderList) return;
+
   fetch('/api/orders', {
-    headers: { 'Authorization': `Bearer ${token}` }
-  }).then(response => response.json())
+    headers: { Authorization: `Bearer ${token}` }
+  })
+    .then(res => res.json())
     .then(orders => {
-      const orderList = document.getElementById('orderList');
-      if (!orderList) return;
       orderList.innerHTML = '';
       orders.forEach(order => {
-        const orderDiv = document.createElement('div');
-        orderDiv.classList.add('order-card');
-        orderDiv.innerHTML = `
+        const div = document.createElement('div');
+        div.className = 'order-card';
+        div.innerHTML = `
           <h3>Pedido #${order._id}</h3>
-          <p>Status: ${order.status}</p>
-          <p>Total: $${order.total}</p>
-          <button onclick="viewOrderDetails('${order._id}')">Ver Detalle</button>
+          <p>Estado: ${order.status}</p>
+          <p>Total: ${order.total} €</p>
         `;
-        orderList.appendChild(orderDiv);
+        orderList.appendChild(div);
       });
-    }).catch(error => console.error('Error al cargar pedidos:', error));
+    })
+    .catch(err => console.error('Error cargando pedidos', err));
 }
 
-function viewOrderDetails(orderId) {
-  const token = sessionStorage.getItem('token');
-  fetch(`/api/orders/${orderId}`, {
-    headers: { 'Authorization': `Bearer ${token}` }
-  }).then(res => res.json())
-    .then(order => {
-      const orderDetailsSection = document.getElementById('orderDetailsSection');
-      if (!orderDetailsSection) return;
-      orderDetailsSection.innerHTML = `
-        <h3>Detalle del Pedido #${order._id}</h3>
-        <p>Status: ${order.status}</p>
-        <p>Total: $${order.total}</p>
-        <p>Fecha: ${new Date(order.createdAt).toLocaleDateString()}</p>
-        <h4>Productos:</h4>
-        <ul>
-          ${order.products.map(p => `
-            <li>
-              <strong>${p.productId.title}</strong><br>
-              Descripción: ${p.productId.description}<br>
-              Precio: $${p.productId.price}<br>
-              Cantidad: ${p.quantity}<br>
-              <img src="${p.productId.image}" alt="${p.productId.title}" style="max-width: 100px;">
-            </li>
-          `).join('')}
-        </ul>
-        <button onclick="closeOrderDetails()">Cerrar</button>
-      `;
-      orderDetailsSection.classList.remove('hidden');
-    }).catch(error => console.error('Error al cargar detalles del pedido:', error));
-}
+// ===============================
+// FUNCION GLOBAL PARA CARRITO
+// ===============================
+function addToCart(product) {
+  const cartKey = `cart_${sessionStorage.getItem('userId')}`;
+  let cart = JSON.parse(localStorage.getItem(cartKey)) || [];
+  
+  // Si el producto ya existe, aumentar cantidad
+  const existing = cart.find(p => p.id === product.id);
+  if (existing) {
+    existing.quantity += 1;
+  } else {
+    cart.push({ ...product, quantity: 1 });
+  }
 
-function closeOrderDetails() {
-  const orderDetailsSection = document.getElementById('orderDetailsSection');
-  if (orderDetailsSection) orderDetailsSection.classList.add('hidden');
+  localStorage.setItem(cartKey, JSON.stringify(cart));
+  localStorage.setItem('cart', JSON.stringify(cart));
+  alert(`Producto "${product.title}" añadido al carrito`);
 }

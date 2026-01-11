@@ -7,18 +7,27 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
   <header class="navbar">
     <h1>Portal de Productos</h1>
     <nav>
-      <span id="userWelcome" class="hidden">Bienvenido, <strong id="usernameDisplay"></strong></span>
+      <span id="userWelcome" class="hidden">
+        Bienvenido, <strong id="usernameDisplay"></strong>
+      </span>
+
+      <!-- Auth -->
       <button id="loginBtn">Iniciar sesión</button>
       <button id="registerBtn">Registrarse</button>
       <button id="logoutBtn" class="hidden">Cerrar sesión</button>
+
+      <!-- Admin -->
       <button id="manageProductsBtn" class="hidden">Gestionar Productos</button>
       <button id="manageUsersBtn" class="hidden">Gestionar Usuarios</button>
       <button id="manageOrdersBtn" class="hidden">Gestionar Pedidos</button>
-      <button id="viewCartBtn" class="hidden">Ver Carrito</button> <!-- Botón para ver el carrito -->
-      <button id="createProductBtn" class="hidden">Crear Producto</button> <!-- Botón para crear producto -->
+      <button id="createProductBtn" class="hidden">Crear Producto</button>
+
+      <!-- Cliente -->
+      <button id="viewCartBtn" class="hidden">Ver Carrito</button>
     </nav>
   </header>
 
@@ -26,7 +35,7 @@
     <section id="authSection">
       <div class="welcome-box">
         <h2>Bienvenido al portal</h2>
-        <p>Accede con tu cuenta o regístrate para comenzar a explorar los productos.</p>
+        <p>Accede con tu cuenta o regístrate para comenzar.</p>
       </div>
     </section>
 
@@ -35,6 +44,26 @@
       <div id="productList" class="product-grid"></div>
     </section>
   </main>
+
+  <script>
+    // BOTONES LOGIN / REGISTER
+    document.addEventListener('DOMContentLoaded', () => {
+      const loginBtn = document.getElementById('loginBtn');
+      const registerBtn = document.getElementById('registerBtn');
+
+      if (loginBtn) {
+        loginBtn.addEventListener('click', () => {
+          window.location.href = 'login.html';
+        });
+      }
+
+      if (registerBtn) {
+        registerBtn.addEventListener('click', () => {
+          window.location.href = 'register.html';
+        });
+      }
+    });
+  </script>
 
   <script src="client.js"></script>
 </body>
